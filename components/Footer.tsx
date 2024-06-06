@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
             <p>Công ty cổ phần/TNHH [Vegan]</p>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <IoLocationSharp size={32} />
+            <IoLocationSharp size={24} />
             <p>A35 Bạch Đằng, phường 2, quận Tân Bình, Hồ Chí Minh</p>
           </div>
           <div className="flex items-center gap-4 mt-3">
