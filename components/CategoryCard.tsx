@@ -16,7 +16,7 @@ const CategoryCard: React.FC<CardProp> = ({ name }) => {
           className="object-cover w-full"
         />
       </figure>
-      <div className="card-body border-collapse  items-center text-center">
+      <div className="card-body  items-center text-center">
         <h2 className="card-title">{name}</h2>
       </div>
     </div>
