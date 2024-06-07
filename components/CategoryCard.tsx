@@ -12,7 +12,7 @@ const CategoryCard: React.FC<CardProp> = ({ name }) => {
           src="/storeIMG/vegan-category.png"
           alt="item image"
           width={397}
-          height={251}
+          height={151}
           className="object-cover w-full"
         />
       </figure>

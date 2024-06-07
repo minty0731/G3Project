@@ -9,45 +9,42 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-green-600 w-full mt-12">
       <div className="flex items-center justify-between h-full max-w-screen-desktop mx-auto px-4 p-10">
-        <nav className="flex flex-col mr-10 text-md text-white">
+        <nav className="flex flex-col mr-10 text-md text-white space-y-5">
           <h6 className="font-medium text-xl">Thông tin</h6>
-          <div className="flex items-center gap-4 mt-5">
+          <div className="flex items-center gap-4 ">
             <FaRegBuilding size={18} />
             <p>Công ty cổ phần/TNHH [Vegan]</p>
           </div>
-          <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center gap-4">
             <IoLocationSharp size={24} />
             <p>A35 Bạch Đằng, phường 2, quận Tân Bình, Hồ Chí Minh</p>
           </div>
-          <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center gap-4">
             <MdOutlineEmail size={20} />
             <p>vegan@green.com</p>
           </div>
-          <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center gap-4">
             <FaPhone size={18} />
             <p>911.911.911</p>
           </div>
         </nav>
-        <nav className="flex flex-col mr-10 text-md text-white">
+        <nav className="flex flex-col mr-10 text-md text-white space-y-5">
           <h6 className="font-medium text-xl">Danh mục</h6>
-          <div className="flex items-center gap-4 mt-5">
+          <div className="flex flex-col items-start gap-3 ">
             <a href="/" className="link-hover">
               Về chúng tôi
             </a>
-          </div>
-          <div className="flex items-center gap-4 mt-3">
             <a href="/" className="link-hover">
               Mở shop
             </a>
-          </div>
-          <div className="flex items-center gap-4 mt-3">
-            <a href="/" className="link-hover">
+            <a href="/" className="link-hover ">
               Cách review cửa hàng
             </a>
-          </div>
-          <div className="flex items-center gap-4 mt-3">
-            <a href="/" className="link-hover">
+            <a href="/" className="link-hover ">
               Chính sách
+            </a>
+            <a href="/" className="link-hover ">
+              Trung tâm hỗ trợ
             </a>
           </div>
         </nav>
