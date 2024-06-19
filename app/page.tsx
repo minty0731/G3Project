@@ -1,32 +1,32 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { StoreCard, CategoryCard } from "@/components";
+import { StoreCard, CategoryCard, BannerSlider } from "@/components";
+
 function page() {
   return (
-    <div>
-      <header className="relative flex items-center justify-center w-full h-[26rem]">
-        <Image
-          src="/image/banner.png"
-          alt="Logo"
-          fill={true}
-          quality={75}
-          className=" object-cover"
-        />
-        <div className="absolute inset-0 w-full h-full bg-black bg-opacity-30 "></div>
-        <div className="absolute flex flex-col items-center justify-center w-full h-full">
-          <h1 className="text-white text-2xl font-bold text-center w-[32rem]">
-            Website Số 1 Việt Nam Về Review Các Quán Ăn, Cửa Hàng Chuyên Về Đồ
-            Chay
+    <div className=" overflow-hidden">
+      <header className="relative flex items-center justify-center w-full h-[36rem]">
+        <BannerSlider />
+        <div className="absolute inset-0 w-full h-full bg-black bg-opacity-50 "></div>
+        <div className="absolute bottom-0 left-0 flex flex-col items-start justify-start w-full p-24">
+          <h1 className="text-white text-3xl font-bold w-[32rem]">
+            Khám Phá Ẩm Thực Chay
           </h1>
+          <p className="text-white text-lg w-[32rem] my-6">
+            Nạp đầy năng lượng và nâng cao sức khỏe mỗi ngày với thực phẩm chay
+            tự nhiên, tận hưởng hương vị tươi ngon và lợi ích bền vững từ thiên
+            nhiên.
+          </p>
           <div className="mt-6">
-            <button className="btn btn-wide bg-white rounded-none font-bold">
+            <button className="btn btn-wide bg-white rounded-md  font-bold">
               Khám Phá Ngay!
             </button>
           </div>
         </div>
       </header>
-      <main className="flex flex-col h-full max-w-screen-desktop mx-auto px-4">
+      <div>
+        {/*Beginning of the round img introduction */}
         <div className="flex items-center justify-center gap-4 mt-10 space-x-32">
           <div className="avatar flex flex-col items-center text-center">
             <div className="w-48 rounded-full overflow-hidden">
@@ -72,46 +72,84 @@ function page() {
                 className="object-cover w-full h-full"
               />
             </div>
-            <h6 className="mt-2 font-bold text-2xl text-green-600">Quảng Bá</h6>
+            <h6 className="mt-2 font-medium text-2xl text-green-600">
+              Quảng Bá
+            </h6>
             <p className="mt-1 w-[15rem] text-lg">
               Quảng bá cửa hàng của bạn đến với mọi người
             </p>
           </div>
         </div>
-        <div className="flex flex-col items-start gap-4">
-          <h1 className=" text-3xl font-bold my-10">
-            Shop được đánh giá tốt gần bạn
+        {/*End of the round img introduction*/}
+        {/*Beginning of website statistics */}
+        <div className="flex items-center justify-between w-[calc(100%+2rem)] -mx-4 bg-custom-green h-32 p-32 mt-10">
+          <div className="flex flex-col">
+            <h1 className=" text-4xl text-white font-bold">1000+</h1>
+            <p className="text-lg text-white mt-4 w-64">
+              Cửa hàng/quán ăn được đăng ký trên toàn quốc
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <h1 className=" text-4xl text-white font-bold">2000+</h1>
+            <p className="text-lg text-white mt-4 w-72">
+              Người dùng mới tham gia đánh giá mỗi tháng
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <h1 className=" text-4xl text-white font-bold">15,000+</h1>
+            <p className="text-lg text-white mt-4 w-72">
+              Các lượt đánh giá và bình luận hằng ngày
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <h1 className=" text-4xl text-white font-bold">53+</h1>
+            <p className="text-lg text-white mt-4 w-72">
+              Các tỉnh thành có sự hiện diện của dịch vụ Vegan
+            </p>
+          </div>
+        </div>
+        {/*End of website statistics */}
+      </div>
+      {/*Beginning of the mobile app*/}
+      <div className="relative flex items-center justify-around w-full h-[28rem] bg-custom-green-light mt-20 ">
+        <div className="absolute flex flex-col items-start justify-center w-full p-24 h-full">
+          <h1 className="text-4xl font-bold w-[32rem]">
+            Khám phá và đánh giá theo phong cách của bạn, mọi lúc, mọi nơi.
           </h1>
-          <div className="grid grid-cols-4 gap-4">
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-            <StoreCard></StoreCard>
-          </div>
-          <div className="flex flex-col items-center justify-center w-full">
-            <button className="btn btn-outline btn-success rounded-none font-bold w-full">
-              Xem Thêm
-            </button>
+          <p className="text-xl font-medium my-6">
+            Tải ứng dụng ngay để tối ưu trải nghiệm
+          </p>
+          <div className="flex gap-8">
+            <div>
+              <Image src="/image/qr-code.png" alt="" width={150} height={150} />
+            </div>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <Image
+                src="/image/Google-Play.png"
+                alt=""
+                width={150}
+                height={150}
+              />
+              <Image
+                src="/image/App-Store.png"
+                alt=""
+                width={150}
+                height={150}
+              />
+              <Image
+                src="/image/App-Gallery.png"
+                alt=""
+                width={150}
+                height={150}
+              />
+            </div>
           </div>
         </div>
-        <div className="flex flex-col items-start gap-4">
-          <h1 className="text-3xl font-bold my-10">Danh Mục</h1>
-          <div className="grid grid-cols-4 gap-4">
-            <CategoryCard name="Nhà hàng" />
-            <CategoryCard name="Quán ăn" />
-            <CategoryCard name="Siêu thị" />
-            <CategoryCard name="Đồ chay" />
-            <CategoryCard name="Thực phẩm chức năng" />
-            <CategoryCard name="Rau xanh" />
-            <CategoryCard name="Trái cây" />
-            <CategoryCard name="Ẩm thực chay thế giới" />
-          </div>
+        <div className="absolute flex right-0 p-24">
+          <Image src="/image/mobile-app.png" alt="" width={450} height={450} />
         </div>
-      </main>
+      </div>
+      {/*End of the mobile app */}
     </div>
   );
 }

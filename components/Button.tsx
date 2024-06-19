@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ButtonProps {
   onClick?: () => void;
@@ -10,8 +10,8 @@ interface ButtonProps {
 const Button: React.FC<ButtonProps> = ({
   onClick,
   disabled = false,
-  className = '',
-  name ='',
+  className = "",
+  name = "",
 }) => {
   return (
     <button
@@ -19,7 +19,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
     >
-        {name}
+      {name}
     </button>
   );
 };

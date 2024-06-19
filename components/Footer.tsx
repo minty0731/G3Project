@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
           </h6>
           <div className="flex items-center justify-center mt-5">
             <Image
-              src="/image/download-logo.png"
+              src=""
               alt="certificate image"
               width={220}
               height={318}

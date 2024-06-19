@@ -13,6 +13,10 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      colors:{
+        "custom-green":"#1ba502",
+        "custom-green-light": "#a9d86e"
+      },
       screens: {
         'tablet': '640px',
         // => @media (min-width: 640px) { ... }
