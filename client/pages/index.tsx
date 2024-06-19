@@ -1,22 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import Link from 'next/link';
 
-function index() {
+const Index = () => (
+  <div>
+    <h1>Welcome to the App</h1>
+    <nav>
+      <Link href="/signup_page">Sign Up</Link> | <Link href="/login_page">Login</Link> | <Link href="/users_page">Users</Link>
+    </nav>
+  </div>
+);
 
-  const [message, setMessage] = useState("Loading");
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/home").then(
-      response => response.json()
-    ).then(data => {
-      setMessage(data.message);
-    });
-
-  }, [])
-
-
-  return (
-    <div>{message}</div>
-  )
-}
-
-export default index
+export default Index;
