@@ -1,7 +1,10 @@
 interface User {
   _id: string;
+  full_name: string;
   username: string;
   password: string;
+  email: string;
+  phone_number: string;
 }
 
 const Home = ({ user }: { user: User | null }) => {
@@ -13,8 +16,9 @@ const Home = ({ user }: { user: User | null }) => {
     <div>
       <h2>Home Page</h2>
       <h3>User Info</h3>
-      <p>Username: {user.username}</p>
-      <p>Password: {user.password}</p>
+      <p>Name: {user.full_name}</p>
+      <p>Email: {user.email}</p>
+      <p>Phone: {user.phone_number}</p>
     </div>
   );
 };

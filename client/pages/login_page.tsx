@@ -8,9 +8,15 @@ interface User {
   password: string;
 }
 
+// Protected API request
+async function getProtectedData() {
+  
+}
+
 const Login = ({ setUser }: { setUser: (user: User | null) => void }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState('diner');
   const [error, setError] = useState('');
   const router = useRouter();
 
@@ -21,15 +27,30 @@ const Login = ({ setUser }: { setUser: (user: User | null) => void }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, userType }),
     });
 
-    const data = await response.json();
+    const token_fetch  = await response.json();
     if (response.ok) {
-      setUser(data.user);
-      router.push('/home_page');
-    } else {
-      setError(data.error);
+      // Store the token in the client-side (e.g., in localStorage)
+      localStorage.setItem('authToken', token_fetch.token);
+      const tokenLocal = localStorage.getItem('authToken');
+      const responseData = await fetch('http://localhost:8080/api/protected', {
+        headers: {
+          'Authorization': `${tokenLocal}`,
+        },
+      });
+      const data = await responseData.json();
+      if (responseData.ok) {
+        setUser(data.user)
+        router.push('/home_page');
+      }
+      else {
+        setError(data.error);
+      }
+    } 
+    else {
+      setError(token_fetch.error);
     }
   };
 
@@ -58,6 +79,25 @@ const Login = ({ setUser }: { setUser: (user: User | null) => void }) => {
               required
             />
           </label>
+        </div>
+        <div>
+          <label>User Type:</label>
+          <input
+            type="radio"
+            name="userType"
+            value="diner"
+            checked={userType === 'diner'}
+            onChange={(e) => setUserType(e.target.value)}
+          />
+          Diner
+          <input
+            type="radio"
+            name="userType"
+            value="owner"
+            checked={userType === 'owner'}
+            onChange={(e) => setUserType(e.target.value)}
+          />
+          Owner
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit">Login</button>
