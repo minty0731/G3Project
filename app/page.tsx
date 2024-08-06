@@ -1,11 +1,20 @@
 "use client";
 import React from "react";
-import Image from "next/image";
-import { StoreCard, CategoryCard, BannerSlider } from "@/components";
+import Link from "next/link";
+import { CategorySlider, BannerSlider } from "@/components";
+import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
+import { HiOutlineLightBulb } from "react-icons/hi";
+import { PiShootingStar } from "react-icons/pi";
+import { RiVerifiedBadgeLine } from "react-icons/ri";
+import { ImageLoader } from "@/components";
+import { searchBanner, reviewBanner, promptBanner, promptStoreBanner, googlePlay, appStore, appGallery, qrCode, appPhone } from "@/container/ImageConstant";
+import StoreSlider from "@/components/StoreSlider";
 
-function page() {
+
+const Page: React.FC = () => {
+
   return (
-    <div className=" overflow-hidden">
+    <div className=" overflow-hidden pt-0">
       <header className="relative flex items-center justify-center w-full h-[36rem]">
         <BannerSlider />
         <div className="absolute inset-0 w-full h-full bg-black bg-opacity-50 "></div>
@@ -30,11 +39,16 @@ function page() {
         <div className="flex items-center justify-center gap-4 mt-10 space-x-32">
           <div className="avatar flex flex-col items-center text-center">
             <div className="w-48 rounded-full overflow-hidden">
-              <Image
-                src="/image/search-banner.jpg"
-                alt="item image"
-                width={397}
-                height={251}
+              <ImageLoader
+                path={searchBanner.link}
+                alt={searchBanner.link}
+                width={300}  // Adjust width and height to be the same
+                height={300} // for a perfect circle
+                cloudinaryAttributes={{
+                  crop: "fill",   // Ensure the image fills the container
+                  gravity: "auto", // Adjust gravity as needed
+                  radius: "max",  // Apply rounded corners
+                }}
                 className="object-cover w-full h-full"
               />
             </div>
@@ -47,11 +61,16 @@ function page() {
           </div>
           <div className="avatar flex flex-col items-center text-center">
             <div className="w-48 rounded-full overflow-hidden">
-              <Image
-                src="/image/review-banner.jpg"
-                alt="item image"
-                width={397}
-                height={251}
+              <ImageLoader
+                path={reviewBanner.link}
+                alt={reviewBanner.link}
+                width={300}  // Adjust width and height to be the same
+                height={300} // for a perfect circle
+                cloudinaryAttributes={{
+                  crop: "fill",   // Ensure the image fills the container
+                  gravity: "auto", // Adjust gravity as needed
+                  radius: "max",  // Apply rounded corners
+                }}
                 className="object-cover w-full h-full"
               />
             </div>
@@ -64,11 +83,16 @@ function page() {
           </div>
           <div className="avatar flex flex-col items-center text-center">
             <div className="w-48 rounded-full overflow-hidden">
-              <Image
-                src="/image/market-banner.jpg"
-                alt="item image"
-                width={397}
-                height={251}
+              <ImageLoader
+                path={promptBanner.link}
+                alt={promptBanner.link}
+                width={300}  // Adjust width and height to be the same
+                height={300} // for a perfect circle
+                cloudinaryAttributes={{
+                  crop: "fill",   // Ensure the image fills the container
+                  gravity: "auto", // Adjust gravity as needed
+                  radius: "max",  // Apply rounded corners
+                }}
                 className="object-cover w-full h-full"
               />
             </div>
@@ -109,9 +133,90 @@ function page() {
           </div>
         </div>
         {/*End of website statistics */}
+        {/*Beginning of the category */}
+        <div className="flex flex-col items-center w-full justify-between mt-10 px-24">
+          <div className="mt-5 mb-14">
+            <h1 className="text-4xl font-bold"> Danh Mục</h1>
+          </div>
+          <CategorySlider />
+        </div>
+        {/*End of the category */}
+        {/*Beginning of the trending store */}
+        <div className="flex flex-col items-center w-full justify-between mt-10 px-24">
+          <div className="mt-5 mb-14">
+            <h1 className="text-4xl font-bold"> Đang Thịnh Hành</h1>
+          </div>
+          <StoreSlider />
+          <div>
+            <Link href="/store">
+              <button className="btn btn-wide bg-custom-grey text-white hover:bg-gray-700 mt-10">Xem thêm</button>
+            </Link>
+          </div>
+        </div>
+        {/*End of the trending store */}
+        {/*Beginning of the nearby store */}
+        <div className="flex flex-col items-center w-full justify-between mt-10 px-24">
+          <div className="mt-5 mb-14">
+            <h1 className="text-4xl font-bold"> Gần Đây</h1>
+          </div>
+          <StoreSlider />
+          <div>
+            <div>
+              <Link href="/store">
+                <button className="btn btn-wide bg-custom-grey text-white hover:bg-gray-700 mt-10">Xem thêm</button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        {/*End of the nearby store */}
+        {/*Beginning of the store creation */}
+        <div className="flex items-center w-full justify-between mt-10 px-24">
+          <div className="flex items-center justify-center">
+            <ImageLoader
+              path={promptStoreBanner.link}
+              alt={promptStoreBanner.alt}
+              width={800}
+              height={800}
+              className=" object-fill rounded-xl"
+            />
+          </div>
+          <div className="flex flex-col items-center justify-center w-full">
+            <div className="grid grid-cols-2 grid-rows-4  w-full gap-4 ">
+              <div className="col-span-2 flex items-center justify-center">
+                <h1 className="text-center text-3xl font-bold">Quảng bá thương hiệu của bạn</h1>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center gap-4">
+                <HiOutlineClipboardDocumentList className="text-4xl text-black  hover:text-white hover:bg-custom-green  duration-100 rounded-md" />
+
+                <h4 className="text-xl">Đăng ký đơn giản và dễ dàng</h4>
+                <p className="w-42">Chúng tôi sẽ liên lạc để hỗ trợ sau khi bạn điền thông tin</p>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center gap-4">
+                <HiOutlineLightBulb className="text-4xl text-black  hover:text-white hover:bg-custom-green  duration-100 rounded-md" />
+
+                <h4 className="text-xl">Thỏa sức sáng tạo</h4>
+                <p className="w-42">Điền thông tin và tùy chỉnh dịch vụ theo ý bạn</p>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center gap-4">
+                <PiShootingStar className="text-4xl text-black  hover:text-white hover:bg-custom-green  duration-100 rounded-md" />
+                <h4 className="text-xl">Gia tăng nhận thức</h4>
+                <p className="w-42">Được nhiều người biết đến và quan tâm</p>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center gap-4">
+                <RiVerifiedBadgeLine className="text-4xl text-black  hover:text-white hover:bg-custom-green  duration-100 rounded-md" />
+                <h4 className="text-xl">Xác minh thương hiệu</h4>
+                <p className="w-42">Xác thực tính chính chủ thông qua vài yêu cầu cần thiết</p>
+              </div>
+              <div className="col-span-2 flex items-center justify-center">
+                <button className="btn btn-neutral px-10 bg-custom-grey text-white border-none">Đăng ký ngay</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/*End of the store creation */}
       </div>
       {/*Beginning of the mobile app*/}
-      <div className="relative flex items-center justify-around w-full h-[28rem] bg-custom-green-light mt-20 ">
+      <div className="relative flex items-center justify-around w-full h-[28rem] bg-custom-green-light mt-10 ">
         <div className="absolute flex flex-col items-start justify-center w-full p-24 h-full">
           <h1 className="text-4xl font-bold w-[32rem]">
             Khám phá và đánh giá theo phong cách của bạn, mọi lúc, mọi nơi.
@@ -121,24 +226,24 @@ function page() {
           </p>
           <div className="flex gap-8">
             <div>
-              <Image src="/image/qr-code.png" alt="" width={150} height={150} />
+              <ImageLoader path={qrCode.link} alt={qrCode.alt} width={150} height={150} />
             </div>
             <div className="flex flex-col items-center justify-center gap-2">
-              <Image
-                src="/image/Google-Play.png"
-                alt=""
+              <ImageLoader
+                path={googlePlay.link}
+                alt={googlePlay.alt}
                 width={150}
                 height={150}
               />
-              <Image
-                src="/image/App-Store.png"
-                alt=""
+              <ImageLoader
+                path={appStore.link}
+                alt={appStore.alt}
                 width={150}
                 height={150}
               />
-              <Image
-                src="/image/App-Gallery.png"
-                alt=""
+              <ImageLoader
+                path={appGallery.link}
+                alt={appGallery.alt}
                 width={150}
                 height={150}
               />
@@ -146,7 +251,7 @@ function page() {
           </div>
         </div>
         <div className="absolute flex right-0 p-24">
-          <Image src="/image/mobile-app.png" alt="" width={450} height={450} />
+          <ImageLoader path={appPhone.link} alt={appPhone.alt} width={450} height={450} />
         </div>
       </div>
       {/*End of the mobile app */}
@@ -154,4 +259,4 @@ function page() {
   );
 }
 
-export default page;
+export default Page;

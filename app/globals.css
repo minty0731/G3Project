@@ -33,3 +33,8 @@
     background-color: #22c55e; /* Tailwind's green-500 */
     transform: scaleX(1.1);
   }
+  thumbnail .keen-slider__slide {
+    font-size: 30px;
+    margin-top: 10px;
+    height: 500px;
+  }

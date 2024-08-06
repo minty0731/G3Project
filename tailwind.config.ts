@@ -15,7 +15,8 @@ const config: Config = {
       },
       colors:{
         "custom-green":"#1ba502",
-        "custom-green-light": "#a9d86e"
+        "custom-green-light": "#a9d86e",
+        "custom-grey": "#54595f"
       },
       screens: {
         'tablet': '640px',

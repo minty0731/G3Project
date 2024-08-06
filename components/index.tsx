@@ -1,7 +1,8 @@
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import StoreCard from "./StoreCard";
-import CategoryCard from "./CategoryCard";
 import BannerSlider from "./BannerSlider";
-
-export { Navbar, Footer, StoreCard, CategoryCard, BannerSlider };
+import ImageLoader from "./ImageLoader";
+import CategorySlider from "./CategorySlider";
+import LoadingSpinner from "./LoadingSpinner";
+import Sidebar from "./Sidebar";
+export { Navbar, Footer, ImageLoader, CategorySlider, BannerSlider, LoadingSpinner, Sidebar };

@@ -1,20 +1,19 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-
+import ImageLoader from "./ImageLoader";
+import { banner1, banner2, banner3 } from "@/container/ImageConstant";
 const bannerImg = [
   {
-    src: "/banner-slider/banner-3.png",
-    alt: "banner 3",
+    src: banner1.link,
+    alt: banner1.alt,
   },
   {
-    src: "/banner-slider/banner.png",
-    alt: "banner 1",
+    src: banner2.link,
+    alt: banner2.alt,
   },
   {
-    src: "/banner-slider/banner-2.png",
-    alt: "banner 2",
+    src: banner3.link,
+    alt: banner3.alt,
   },
 ];
 
@@ -39,16 +38,14 @@ const BannerSlider: React.FC = () => {
       {bannerImg.map((img, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentImage ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImage ? "opacity-100" : "opacity-0"
+            }`}
         >
-          <Image
-            src={img.src}
+          <ImageLoader
+            path={img.src}
             alt={img.alt}
-            fill={true}
             className="object-cover"
-            quality={100}
+            cloudinaryAttributes={{ fill: "true" }}
           />
         </div>
       ))}
