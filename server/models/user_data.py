@@ -20,5 +20,5 @@ class DinerData(UserData):
 
 
 @dataclass
-class RestaurantOwnerData(UserData):
+class OwnerData(UserData):
     restaurant_id: str = ''

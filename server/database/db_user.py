@@ -1,6 +1,5 @@
 from database.db_manager import DatabaseManager
-from models.user_data import DinerData, RestaurantOwnerData
-from models.user_auth import UserAuthentication
+from models.mongo_user import DinerData, OwnerData, UserAuthentication
 from misc.const import CollectionName, UserType
 from misc.signup_data import SignUpData, create_user_data_and_auth_from_signup_data
 from bson.objectid import ObjectId
@@ -18,7 +17,7 @@ def convert_doc_to_diner_data(doc):
 
 
 def convert_doc_to_owner_data(doc):
-    return RestaurantOwnerData(
+    return OwnerData(
         email=doc['email'],
         phone_number=doc['phone_number'],
         full_name=doc['full_name'],
@@ -32,6 +31,9 @@ class UserRepository:
         self.db_manager = db_manager
 
     def create_diner_db(self, diner_data: DinerData, diner_auth: UserAuthentication) -> str:
+        """
+        Create a diner user.
+        """
         collection_diner_data = self.db_manager.get_collection(
             CollectionName.DinerData)
         collection_diner_auth = self.db_manager.get_collection(
@@ -47,11 +49,46 @@ class UserRepository:
 
         return diner_id
 
-    def create_owner_db(self, owner_data: RestaurantOwnerData, owner_auth: UserAuthentication) -> str:
+    def update_diner_data(self, diner_id: str, diner_data: DinerData) -> bool:
+        """
+        Update a diner user data.
+        """
+        collection_diner_data = self.db_manager.get_collection(
+            CollectionName.DinerData)
+
+        # Update diner data
+        result_data = collection_diner_data.update_one(
+            {"_id": ObjectId(diner_id)},
+            {"$set": diner_data.__dict__}
+        )
+
+        # Return true if at least one of the updates was successful
+        return result_data.modified_count > 0
+
+    def update_diner_auth(self, diner_id: str, diner_auth: UserAuthentication) -> bool:
+        """
+        Update a diner user authentication.
+        """
+        collection_diner_auth = self.db_manager.get_collection(
+            CollectionName.DinerAuthentication)
+
+        # Update diner authentication
+        result_auth = collection_diner_auth.update_one(
+            {"user_id": diner_id},
+            {"$set": diner_auth.__dict__}
+        )
+
+        # Return true if at least one of the updates was successful
+        return result_auth.modified_count > 0
+    
+    def create_owner_db(self, owner_data: OwnerData, owner_auth: UserAuthentication) -> str:
+        """
+        Create an owner user.
+        """
         collection_owner_data = self.db_manager.get_collection(
-            CollectionName.RestaurantOwnerData)
+            CollectionName.OwnerData)
         collection_owner_auth = self.db_manager.get_collection(
-            CollectionName.RestaurantOwnerAuthentication)
+            CollectionName.OwnerAuthentication)
 
         doc_owner_data = collection_owner_data.insert_one(owner_data.__dict__)
         owner_id = str(doc_owner_data.inserted_id)
@@ -61,12 +98,47 @@ class UserRepository:
 
         return owner_id
 
+    def update_owner_data(self, owner_id: str, owner_data: OwnerData) -> bool:
+        """
+        Update an owner user data.
+        """
+        collection_owner_data = self.db_manager.get_collection(
+            CollectionName.OwnerData)
+
+        # Update owner data
+        result_data = collection_owner_data.update_one(
+            {"_id": ObjectId(owner_id)},
+            {"$set": owner_data.__dict__}
+        )
+
+        # Return true if at least one of the updates was successful
+        return result_data.modified_count > 0
+
+    def update_owner_auth(self, owner_id: str, owner_auth: UserAuthentication) -> bool:
+        """
+        Update an owner user authetication.
+        """
+        collection_owner_auth = self.db_manager.get_collection(
+            CollectionName.OwnerAuthentication)
+
+        # Update owner authentication
+        result_auth = collection_owner_auth.update_one(
+            {"user_id": owner_id},
+            {"$set": owner_auth.__dict__}
+        )
+
+        # Return true if at least one of the updates was successful
+        return result_auth.modified_count > 0
+    
     def create_user(self, signup_data: SignUpData) -> str:
+        """
+        Create user because they have the same interface
+        """
         user_data, user_auth = create_user_data_and_auth_from_signup_data(
             signup_data)
         if signup_data.user_type == UserType.Diner:
             user_id = self.create_diner_db(user_data, user_auth)
-        elif signup_data.user_type == UserType.RestaurantOwner:
+        elif signup_data.user_type == UserType.Owner:
             user_id = self.create_owner_db(user_data, user_auth)
         return user_id
 
@@ -77,9 +149,9 @@ class UserRepository:
         if user_type == UserType.Diner:
             collection_users = self.db_manager.get_collection(
                 CollectionName.DinerAuthentication)
-        elif user_type == UserType.RestaurantOwner:
+        elif user_type == UserType.Owner:
             collection_users = self.db_manager.get_collection(
-                CollectionName.RestaurantOwnerAuthentication)
+                CollectionName.OwnerAuthentication)
 
         user = collection_users.find_one({'username': username,
                                           'password': password})
@@ -89,7 +161,7 @@ class UserRepository:
         else:
             return None
 
-    def get_user_data_from_id(self, user_id: str):
+    def get_user_data_from_id(self, user_id: str) -> DinerData | OwnerData:
         collection_diners = self.db_manager.get_collection(
             CollectionName.DinerData)
 
@@ -100,7 +172,7 @@ class UserRepository:
             user_data = convert_doc_to_diner_data(user_doc)
         else:
             collection_owners = self.db_manager.get_collection(
-                CollectionName.RestaurantOwnerData)
+                CollectionName.OwnerData)
             user_doc = collection_owners.find_one({'_id': ObjectId(user_id)})
             if user_doc is None:
                 return None
@@ -108,6 +180,35 @@ class UserRepository:
 
         print(user_data)
         return user_data
+    
+    def get_user_auth_from_id(self, user_id: str) -> UserAuthentication:
+        collection_diner_auth = self.db_manager.get_collection(
+            CollectionName.DinerAuthentication)
+
+        user_doc = collection_diner_auth.find_one({'user_id': user_id})
+        if user_doc is None:
+            collection_owner_auth = self.db_manager.get_collection(
+                CollectionName.OwnerAuthentication)
+            user_doc = collection_owner_auth.find_one({'user_id': user_id})
+            if user_doc is None:
+                return None
+
+        user_doc.pop('_id', None)  # Remove _id if MongoRestaurant doesn't accept it
+        user_auth = UserAuthentication(**user_doc)
+        return user_auth
+
+    def check_if_user_exist_from_id(self, user_id: str, user_type: str) -> bool:
+        collection = None
+        if user_type == UserType.Diner:
+            collection = self.db_manager.get_collection(
+                CollectionName.DinerData)
+        elif user_type == UserType.Owner:
+            self.db_manager.get_collection(
+                CollectionName.OwnerData)
+        else:
+            return False
+        user_doc = collection.find_one({'_id': ObjectId(user_id)})
+        return False if user_doc is None else True
 
     def get_all_users(self):
         diner_data = self.db_manager.get_all_docs_from_collection(
@@ -115,9 +216,9 @@ class UserRepository:
         diner_auth = self.db_manager.get_all_docs_from_collection(
             CollectionName.DinerAuthentication)
         owner_data = self.db_manager.get_all_docs_from_collection(
-            CollectionName.RestaurantOwnerData)
+            CollectionName.OwnerData)
         owner_auth = self.db_manager.get_all_docs_from_collection(
-            CollectionName.RestaurantOwnerAuthentication)
+            CollectionName.OwnerAuthentication)
 
         # Organize the data
         data = {

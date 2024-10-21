@@ -1,0 +1,593 @@
+openapi: 3.0.0
+info:
+  title: Restaurant Management API
+  description: API for managing restaurants, categories, and food items with user authentication.
+  version: 1.0.0
+
+paths:
+  /api/restaurant:
+    post:
+      summary: Create Restaurant
+      description: Create a new restaurant.
+      operationId: createRestaurant
+      security:
+        - jwt_token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner_id:
+                  type: string
+                  example: "owner_id_123"
+                type:
+                  type: string
+                  example: "Diner"
+                name:
+                  type: string
+                  example: "Best Diner"
+                description:
+                  type: array
+                  items:
+                    type: string
+                profile_link:
+                  type: string
+                  example: "http://example.com/profile"
+                phone_number:
+                  type: string
+                  example: "+1234567890"
+                main_cuisine_type:
+                  type: string
+                  example: "Italian"
+                open_hours:
+                  type: string
+                  example: "9 AM - 11 PM"
+                pure_vegan:
+                  type: boolean
+                  example: false
+                take_away:
+                  type: boolean
+                  example: true
+                dine_in:
+                  type: boolean
+                  example: true
+                delivery_link:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - owner_id
+                - name
+      responses:
+        '201':
+          description: Restaurant created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restaurant_id:
+                    type: string
+                    example: "new_restaurant_id"
+
+  /api/restaurant/{restaurant_id}:
+    patch:
+      summary: Update Restaurant Info
+      description: Update information of a specific restaurant.
+      operationId: updateRestaurantInfo
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "Diner"
+                name:
+                  type: string
+                  example: "Best Diner Updated"
+                description:
+                  type: array
+                  items:
+                    type: string
+                phone_number:
+                  type: string
+                  example: "+1234567890"
+                main_cuisine_type:
+                  type: string
+                  example: "Italian"
+                open_hours:
+                  type: string
+                  example: "10 AM - 10 PM"
+                pure_vegan:
+                  type: boolean
+                  example: false
+                take_away:
+                  type: boolean
+                  example: true
+                dine_in:
+                  type: boolean
+                  example: true
+              required:
+                - name
+      responses:
+        '200':
+          description: Restaurant updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Update restaurant successfully"
+        '401':
+          description: Update failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Update Failed"
+
+  /api/restaurant/{restaurant_id}/info:
+    get:
+      summary: Get Restaurant Info
+      description: Retrieve information about a specific restaurant.
+      operationId: getRestaurantInfo
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant to retrieve.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Restaurant info retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  owner_id:
+                    type: string
+                    example: "owner_id_123"
+                  type:
+                    type: string
+                    example: "Diner"
+                  name:
+                    type: string
+                    example: "Best Diner"
+                  description:
+                    type: array
+                    items:
+                      type: string
+                      example: "Cozy atmosphere"
+                  phone_number:
+                    type: string
+                    example: "+1234567890"
+        '404':
+          description: Restaurant not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Restaurant not found"
+
+  /api/restaurant/{restaurant_id}/category:
+    post:
+      summary: Create Restaurant Category
+      description: Create a new category for the specified restaurant.
+      operationId: createRestaurantCategory
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Appetizers"
+              required:
+                - name
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Create restaurant category successfully"
+        '401':
+          description: Category creation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Update Failed"
+
+  /api/restaurant/{restaurant_id}/category/{category_id}:
+    patch:
+      summary: Update Restaurant Category
+      description: Update information of a specific category.
+      operationId: updateRestaurantCategory
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant.
+          schema:
+            type: string
+        - name: category_id
+          in: path
+          required: true
+          description: The ID of the category to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Appetizers"
+              required:
+                - name
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Update restaurant category successfully"
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Update Failed"
+
+  /api/restaurant/{restaurant_id}/foods:
+    post:
+      summary: Create Restaurant Food
+      description: Create a new food item for the specified restaurant.
+      operationId: createRestaurantFood
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant.
+          schema:
+            type: string
+        - name: category_id
+          in: path
+          required: true
+          description: The ID of the category.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: string
+                  example: "category_id_456"
+                name:
+                  type: string
+                  example: "Garlic Bread"
+                description:
+                  type: string
+                  example: "Delicious garlic bread with herbs."
+                price:
+                  type: number
+                  format: float
+                  example: 5.99
+                picture_link:
+                  type: string
+                  example: "http://example.com/garlic_bread.jpg"
+              required:
+                - category_id
+                - name
+                - price
+      responses:
+        '201':
+          description: Food created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Create restaurant food successfully"
+        '401':
+          description: Food creation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Update Failed"
+    get:
+      summary: Get Restaurant Foods
+      description: Retrieve all food items for a specific restaurant, grouped by category.
+      operationId: getRestaurantFoods
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Foods retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restaurant_foods:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        category_id:
+                          type: string
+                          example: "category_id_456"
+                        food_list:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                example: "Garlic Bread"
+                              price:
+                                type: number
+                                format: float
+                                example: 5.99
+        '404':
+          description: Restaurant not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Restaurant not found"
+
+  /api/restaurant/{restaurant_id}/foods/{food_id}:
+    patch:
+      summary: Update Restaurant Food
+      description: Update information of a specific food item.
+      operationId: updateRestaurantFood
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant.
+          schema:
+            type: string
+        - name: food_id
+          in: path
+          required: true
+          description: The ID of the food item to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Garlic Bread with Cheese"
+                description:
+                  type: string
+                  example: "Delicious garlic bread topped with cheese."
+                price:
+                  type: number
+                  format: float
+                  example: 6.99
+              required:
+                - name
+      responses:
+        '200':
+          description: Food updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Update restaurant food successfully"
+        '404':
+          description: Food not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Update Failed"
+
+  /api/restaurant/amount/info:
+    get:
+      summary: Get All Restaurant Count
+      description: Retrieve the total count of restaurants.
+      operationId: getAllRestaurantInfoCount
+      responses:
+        '200':
+          description: Count retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 100
+
+  /api/restaurant/amount/foods:
+    get:
+      summary: Get All Foods Count
+      description: Retrieve the total count of food items.
+      operationId: getAllRestaurantsFoodCount
+      responses:
+        '200':
+          description: Count retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 500
+
+  /api/restaurant/home/info:
+    get:
+      summary: Get Paginated Restaurant List
+      description: Retrieve a list of restaurants, divided by pagination.
+      operationId: getAllRestaurantInfoInfo
+      parameters:
+        - name: pageNumber
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: itemPerPage
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Restaurant list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restaurants:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Best Diner"
+                        phone_number:
+                          type: string
+                          example: "+1234567890"
+
+  /api/restaurant/home/foods:
+    get:
+      summary: Get Paginated Food List
+      description: Retrieve a list of food items from all restaurants, divided by pagination.
+      operationId: getAllRestaurantsFoodInfo
+      parameters:
+        - name: pageNumber
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: itemPerPage
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Food list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  foods:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Garlic Bread"
+                        price:
+                          type: number
+                          format: float
+                          example: 5.99
+
+components:
+  securitySchemes:
+    jwt_token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
