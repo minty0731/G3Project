@@ -6,17 +6,16 @@ import { IoSearchOutline } from "react-icons/io5";
 import { usePathname } from "next/navigation";
 import ImageLoader from "./ImageLoader";
 import { vegan } from "@/container/ImageConstant";
-import { useAuth } from "@/container/AuthContext";
 import { useRouter } from "next/navigation";
-
+import Cookies from "js-cookie";
 const Navbar: React.FC = () => {
-  const { user, logout, loading } = useAuth();
   const router = useRouter();
   // Get URL
   const pathname = usePathname();
   // State to manage navbar position
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const [loading, setLoading] = useState()
+  const [user, setUser] = useState(false)
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -25,16 +24,22 @@ const Navbar: React.FC = () => {
         setIsScrolled(false);
       }
     };
-
+    changeAuth()
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [Cookies.get('token')]);
   const handleLogout = () => {
-    logout();
+    Cookies.remove('token')
+    setUser(false)
     router.push('/login');
   };
+  const changeAuth = () => {
+    const token = Cookies.get('token')
+    console.log(token)
+    setUser(!!token); // Set user to true if token exists, false otherwise
+  }
 
   // Active link when it's clicked or hover
   const linkClasses = (path: string): string =>
@@ -77,9 +82,7 @@ const Navbar: React.FC = () => {
         <div className="ml-auto flex items-center gap-8">
           <IoSearchOutline size={30} />
           <div className="flex gap-3">
-            {loading ? (
-              <div className="skeleton h-16 w-16 shrink-0 rounded-full"></div>
-            ) : user ? (
+            {user ? (
               <>
                 <div className="dropdown dropdown-bottom dropdown-end dropdown-hover">
                   <div tabIndex={0} role="button" className="">
@@ -94,7 +97,7 @@ const Navbar: React.FC = () => {
                       <Link href="/profile">Tài khoản</Link>
                     </li>
                     <li>
-                      <Link href="/login" onClick={logout}>Đăng xuất</Link>
+                      <button onClick={handleLogout} >Đăng xuất</button>
                     </li>
                   </ul>
                 </div>

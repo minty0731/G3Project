@@ -4,15 +4,13 @@ import ImageLoader from '@/components/ImageLoader'; // Assuming the correct impo
 import { signupLoginBanner, vegan } from '@/container/ImageConstant';
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/container/AuthContext';
-
+import Cookies from 'js-cookie';
 const LoginPage: React.FC = () => {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [userType, setUserType] = useState('diner');
     const [error, setError] = useState('');
-    const { login } = useAuth();
 
     useEffect(() => {
         if (error) {
@@ -26,7 +24,8 @@ const LoginPage: React.FC = () => {
 
     const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const response = await fetch('http://localhost:8080/api/login', {
+        console.log(username, password, userType)
+        const response = await fetch('http://127.0.0.1:8080/api/user/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -34,8 +33,9 @@ const LoginPage: React.FC = () => {
             body: JSON.stringify({ username, password, userType }),
         });
         if (response.ok) {
+
             const data = await response.json();
-            await login(data.token); // Call the login function with the received token
+            Cookies.set('token', data.token)
             router.push('/'); // Redirect to the homepage after successful login
         } else {
             const errorData = await response.json();

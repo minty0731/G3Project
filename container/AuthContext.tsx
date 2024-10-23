@@ -1,4 +1,4 @@
-'use client'
+/*'use client'
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import Cookies from 'js-cookie';
 
@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const fetchUser = async () => {
             const token = Cookies.get('token');
             if (token) {
-                const response = await fetch('http://localhost:8080/api/protected', {
+                const response = await fetch('http://127.0.0.1:8080/api/user/get_authentication', {
                     method: 'GET',
                     headers: {
                         'Authorization': `${token}`,
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const login = async (token: string) => {
         Cookies.set('token', token);
-        const response = await fetch('http://localhost:8080/api/protected', {
+        const response = await fetch('http://127.0.0.1:8080/api/user/login', {
             method: 'GET',
             headers: {
                 'Authorization': `${token}`,
@@ -75,3 +75,4 @@ export const useAuth = () => {
     }
     return context;
 };
+*/

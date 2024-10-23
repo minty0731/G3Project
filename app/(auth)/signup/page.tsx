@@ -4,7 +4,6 @@ import ImageLoader from '@/components/ImageLoader'; // Assuming the correct impo
 import { signupLoginBanner, vegan } from '@/container/ImageConstant';
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/container/AuthContext';
 import { Validation } from '@/container/Validation';
 const SignupPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -16,7 +15,6 @@ const SignupPage: React.FC = () => {
 
     const router = useRouter();
     const [error, setError] = useState('');
-    const { login } = useAuth();
 
     const handleSignupSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -26,7 +24,7 @@ const SignupPage: React.FC = () => {
             setError(checkValidate.join("\n"));
             return;
         }
-        const response = await fetch('http://localhost:8080/api/signup', {
+        const response = await fetch('http://127.0.0.1:8080/api/user/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -34,24 +32,10 @@ const SignupPage: React.FC = () => {
             body: JSON.stringify({ username, password, email, phone, userType }),
         });
         if (response.ok) {
-            autoLogin();
+            router.push("/login")
         } else {
             const errorData = await response.json();
             setError(errorData.error);
-        }
-    }
-    const autoLogin = async () => {
-        const response = await fetch('http://localhost:8080/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password, userType }),
-        });
-        if (response.ok) {
-            const data = await response.json();
-            await login(data.token); // Call the login function with the received token
-            router.push('/'); // Redirect to the homepage after successful login
         }
     }
 
