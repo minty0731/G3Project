@@ -25,7 +25,7 @@ export const Validation = (
 
         // Email validation using a basic regex
         if (!isValidEmail(email)) {
-            errors.push('Valid email is required');
+            errors.push('Email không hợp lệ');
         }
 
         // Vietnam phone number format validation
