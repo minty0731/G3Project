@@ -1,5 +1,6 @@
+from dataclasses import asdict
 from database.db_manager import DatabaseManager
-from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood
+from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood, MongoFilteredRestaurant
 from misc.const import CollectionName
 from bson.objectid import ObjectId
 
@@ -16,7 +17,7 @@ class RestaurantRepository:
             CollectionName.RestaurantData)
 
         doc_restaurant_data = collection_restaurant_data.insert_one(
-            mongo_restaurant.__dict__)
+            asdict(mongo_restaurant))
         restaurant_id = str(doc_restaurant_data.inserted_id)
 
         return restaurant_id
@@ -47,7 +48,7 @@ class RestaurantRepository:
 
         result = collection_restaurant_data.update_one(
             {"_id": ObjectId(restaurant_id)},
-            {"$set": mongo_restaurant.__dict__}
+            {"$set": asdict(mongo_restaurant)}
         )
         return result.modified_count > 0
 
@@ -59,7 +60,7 @@ class RestaurantRepository:
             CollectionName.RestaurantCategory)
 
         doc_category_data = collection_category_data.insert_one(
-            mongo_category.__dict__)
+            asdict(mongo_category))
         category_id = str(doc_category_data.inserted_id)
 
         return category_id
@@ -73,7 +74,7 @@ class RestaurantRepository:
 
         result = collection_category_data.update_one(
             {"_id": ObjectId(category_id)},
-            {"$set": mongo_category.__dict__}
+            {"$set": asdict(mongo_category)}
         )
         return result.modified_count > 0
 
@@ -94,7 +95,7 @@ class RestaurantRepository:
         )
 
         doc_food_data = collection_food_data.insert_one(
-            mongo_food.__dict__)
+            asdict(mongo_food))
         food_id = str(doc_food_data.inserted_id)
 
         return food_id
@@ -108,7 +109,7 @@ class RestaurantRepository:
 
         result = collection_food_data.update_one(
             {"_id": ObjectId(food_id)},
-            {"$set": mongo_food.__dict__}
+            {"$set": asdict(mongo_food)}
         )
         return result.modified_count > 0
 
@@ -150,9 +151,7 @@ class RestaurantRepository:
         restaurants = list(collection_restaurant_data.find().skip(
             skip_count).limit(page_size))
 
-        return {
-            "restaurants": restaurants
-        }
+        return restaurants
 
     def get_home_food_list(self, page: int = 1, page_size: int = 10) -> list[dict]:
         """
@@ -168,9 +167,7 @@ class RestaurantRepository:
         foods = list(collection_food_data.find().skip(
             skip_count).limit(page_size))
 
-        return {
-            "foods": foods
-        }        
+        return foods     
         
     def get_restaurant_foods_grouped_by_category(self, restaurant_id: str) -> list[dict]:
         """
@@ -201,3 +198,55 @@ class RestaurantRepository:
             grouped_food[category_id]["food_list"].append(food)
 
         return list(grouped_food.values())
+    def create_query_for_filtered_restaurants(self, filter: MongoFilteredRestaurant) -> dict[str, object]:
+        query = {}
+        # Filter by boolean attributes using OR
+        if filter.pure_vegan:
+            query["$or"].append({"pure_vegan": True})
+        if filter.take_away:
+            query["$or"].append({"take_away": True})
+        if filter.dine_in:
+            query["$or"].append({"dine_in": True})
+        if filter.buffet:
+            query["$or"].append({"buffet": True})
+
+        # Filter by food country type
+        if filter.food_country_types:
+            if len(filter.food_country_types) > 1:
+                query["food_country_type"] = {"$in": filter.food_country_types}  # Array case
+            elif len(filter.food_country_types) == 1:
+                query["food_country_type"] = filter.food_country_types[0]  # Single value case
+
+        # Filter by delivery types (check the name field)
+        if filter.delivery_types:
+            if len(filter.delivery_types) > 1:
+                query["delivery_collection.name"] = {"$in": filter.delivery_types}  # Array case
+            elif len(filter.delivery_types) == 1:
+                query["delivery_collection.name"] = filter.delivery_types[0]  # Single value case
+
+        # Filter by price range (using AND logic)
+        price_conditions = {}
+        if filter.price_over > 0:
+            price_conditions['lowest_price'] = {'$gte': filter.price_over}
+        if filter.price_under > 0:
+            price_conditions['highest_price'] = {'$lte': filter.price_under}
+
+        # Combine price conditions with the main query
+        if price_conditions:
+            query.update(price_conditions)
+
+        return query
+    
+    def get_filtered_restaurant_list(self, filter: MongoFilteredRestaurant) -> list[dict]:
+        """
+        Retrieve the list of restaurants that is filtered, in pagination
+        """
+        collection_restaurant_data = self.db_manager.get_collection(
+            CollectionName.RestaurantData)
+
+        query = self.create_query_for_filtered_restaurants(filter)
+        
+        # Retrieve paginated results
+        filtered_restaurants = list(collection_restaurant_data.find(query))
+        
+        return filtered_restaurants

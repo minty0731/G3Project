@@ -23,6 +23,7 @@ class ResponseKey:
     RestaurantCountFoods= 'count_total_restaurant_foods'
     RestaurantListInfo = 'list_total_restaurant_info'
     RestaurantListFoods= 'list_total_restaurant_foods'
+    RestaurantFilteredFoods= 'list_filtered_restaurant_foods'
     KeyUser = 'user'
     KeyAuth = 'authentication'
 

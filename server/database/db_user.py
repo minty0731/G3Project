@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from database.db_manager import DatabaseManager
 from models.mongo_user import DinerData, OwnerData, UserAuthentication
 from misc.const import CollectionName, UserType
@@ -39,13 +40,13 @@ class UserRepository:
         collection_diner_auth = self.db_manager.get_collection(
             CollectionName.DinerAuthentication)
 
-        doc_diner_data = collection_diner_data.insert_one(diner_data.__dict__)
+        doc_diner_data = collection_diner_data.insert_one(asdict(diner_data))
 
         diner_id = str(doc_diner_data.inserted_id)
         print(diner_id)
         diner_auth.user_id = diner_id
 
-        collection_diner_auth.insert_one(diner_auth.__dict__)
+        collection_diner_auth.insert_one(asdict(diner_auth))
 
         return diner_id
 
@@ -59,7 +60,7 @@ class UserRepository:
         # Update diner data
         result_data = collection_diner_data.update_one(
             {"_id": ObjectId(diner_id)},
-            {"$set": diner_data.__dict__}
+            {"$set": asdict(diner_data)}
         )
 
         # Return true if at least one of the updates was successful
@@ -75,7 +76,7 @@ class UserRepository:
         # Update diner authentication
         result_auth = collection_diner_auth.update_one(
             {"user_id": diner_id},
-            {"$set": diner_auth.__dict__}
+            {"$set": asdict(diner_auth)}
         )
 
         # Return true if at least one of the updates was successful
@@ -90,14 +91,30 @@ class UserRepository:
         collection_owner_auth = self.db_manager.get_collection(
             CollectionName.OwnerAuthentication)
 
-        doc_owner_data = collection_owner_data.insert_one(owner_data.__dict__)
+        doc_owner_data = collection_owner_data.insert_one(asdict(owner_data))
         owner_id = str(doc_owner_data.inserted_id)
         owner_auth.user_id = owner_id
 
-        collection_owner_auth.insert_one(owner_auth.__dict__)
+        collection_owner_auth.insert_one(asdict(owner_auth))
 
         return owner_id
 
+    def update_owner_restaurant_id(self, owner_id: str, restaurant_id: str) -> bool:
+        """
+        Update an owner user data.
+        """
+        collection_owner_data = self.db_manager.get_collection(
+            CollectionName.OwnerData)
+
+        # Update owner data
+        result_data = collection_owner_data.update_one(
+            {"_id": ObjectId(owner_id)},
+            {"$set": {"restaurant_id": restaurant_id}}
+        )
+
+        # Return true if at least one of the updates was successful
+        return result_data.modified_count > 0
+        
     def update_owner_data(self, owner_id: str, owner_data: OwnerData) -> bool:
         """
         Update an owner user data.
@@ -108,7 +125,7 @@ class UserRepository:
         # Update owner data
         result_data = collection_owner_data.update_one(
             {"_id": ObjectId(owner_id)},
-            {"$set": owner_data.__dict__}
+            {"$set": asdict(owner_data)}
         )
 
         # Return true if at least one of the updates was successful
@@ -124,7 +141,7 @@ class UserRepository:
         # Update owner authentication
         result_auth = collection_owner_auth.update_one(
             {"user_id": owner_id},
-            {"$set": owner_auth.__dict__}
+            {"$set": asdict(owner_auth)}
         )
 
         # Return true if at least one of the updates was successful

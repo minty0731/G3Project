@@ -3,10 +3,11 @@ from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 from functools import wraps
 import jwt
+from dataclasses import asdict
 from database.db_manager import DatabaseManager, serialize_document
 from database.db_user import UserRepository
 from database.db_restaurant import RestaurantRepository
-from models.mongo_restaurant import create_restaurant_data_from_json, create_category_data_from_json, create_food_data_from_json
+from models.mongo_restaurant import create_restaurant_data_from_json, create_category_data_from_json, create_food_data_from_json, create_filtered_restaurant_from_json
 from models.mongo_user import create_diner_data_from_json, create_owner_data_from_json, create_user_auth_from_json
 from misc.signup_data import create_signup_data_from_json
 from misc.const import ResponseKey, UserType
@@ -134,7 +135,7 @@ def get_user(user_id):
     user = USER_REPO.get_user_data_from_id(user_id)
     if user:
         return api_response_data(ResponseKey.Message, 'Login successful', 
-                                 ResponseKey.KeyUser, user.__dict__, 200)
+                                 ResponseKey.KeyUser, asdict(user), 200)
     else:
         return api_response_message(ResponseKey.Error, 'Invalid credentials', 401)
     
@@ -149,7 +150,7 @@ def get_authentication(user_id):
     auth = USER_REPO.get_user_auth_from_id(user_id)
     if auth:
         return api_response_data(ResponseKey.Message, 'Get authentication sucessfully', 
-                                 ResponseKey.KeyAuth, auth.__dict__, 200)
+                                 ResponseKey.KeyAuth, asdict(auth), 200)
     else:
         return api_response_message(ResponseKey.Error, 'Invalid credentials', 401)
     
@@ -225,6 +226,7 @@ def create_restaurant(user_id):
     json_data = request.get_json()
     restaurant_data = create_restaurant_data_from_json(user_id, json_data)
     restaurant_id = RESTAURANT_REPO.create_restaurant_db(restaurant_data)
+    USER_REPO.update_owner_restaurant_id(user_id, restaurant_id)
     return api_response_message(ResponseKey.RestaurantID, restaurant_id, 201)
 
 @app.route('/api/restaurant/<string:restaurant_id>', methods=['PATCH'])
@@ -250,7 +252,7 @@ def get_restaurant_info(restaurant_id):
     try:
         restaurant_info = RESTAURANT_REPO.get_restaurant_info(restaurant_id)
         return api_response_data(ResponseKey.Message, 'Get restaurant info successfully', 
-                                 ResponseKey.RestaurantInfo, restaurant_info.__dict__)
+                                 ResponseKey.RestaurantInfo, asdict(restaurant_info))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
 
@@ -322,7 +324,7 @@ def get_restaurant_foods(restaurant_id):
     try:
         restaurant_food_list = RESTAURANT_REPO.get_restaurant_foods_grouped_by_category(restaurant_id)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods successfully', 
-                                 ResponseKey.RestaurantFoods, restaurant_food_list.__dict__)
+                                 ResponseKey.RestaurantFoods, asdict( restaurant_food_list))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
 
@@ -351,7 +353,7 @@ def get_all_restaurants_food_count():
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
 @app.route('/api/restaurant/home/info', methods=['GET'])
-def get_all_restaurant_info_info():
+def get_all_restaurant_info_list():
     """
     Get the list of total restaurant info, divided by pagination
     """
@@ -361,12 +363,12 @@ def get_all_restaurant_info_info():
         item_per_page = json_data.get('itemPerPage')
         list_info = RESTAURANT_REPO.get_home_restaurant_list(page_number, item_per_page)
         return api_response_data(ResponseKey.Message, 'Get restaurant info list successfully', 
-                                 ResponseKey.RestaurantListInfo, list_info.__dict__)
+                                 ResponseKey.RestaurantListInfo, asdict(list_info))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
 @app.route('/api/restaurant/home/foods', methods=['GET'])
-def get_all_restaurants_food_info():
+def get_all_restaurants_food_list():
     """
     Get the list of total restaurant foods, divided by pagination, return by food list
     """
@@ -376,11 +378,24 @@ def get_all_restaurants_food_info():
         item_per_page = json_data.get('itemPerPage')
         list_foods= RESTAURANT_REPO.get_home_food_list(page_number, item_per_page)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods list successfully', 
-                                 ResponseKey.RestaurantListFoods, list_foods.__dict__)
+                                 ResponseKey.RestaurantListFoods, asdict(list_foods))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
 
+@app.route('/api/restaurant/filter/info', methods=['GET'])
+def get_filtered_restaurant_info_info():
+    """
+    Get the list of filtered restaurant info
+    """
+    try:
+        json_data = request.get_json()
+        filter_data = create_filtered_restaurant_from_json(json_data)
+        list_info = RESTAURANT_REPO.get_filtered_restaurant_list(filter_data)
+        return api_response_data(ResponseKey.Message, 'Get all filtered restaurant info list successfully', 
+                                 ResponseKey.RestaurantFilteredFoods, asdict(list_info))
+    except ValueError:
+        return api_response_message(ResponseKey.Error, 'Error', 400)    
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
