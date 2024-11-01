@@ -10,7 +10,7 @@ class MongoDeliveryLink:
     """
     Use for delivery
     """
-    name: str
+    company: str
     link: str
 
 
