@@ -5,39 +5,29 @@ from bson.objectid import ObjectId
 from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood
 from database.db_restaurant import RestaurantRepository
 from misc.const import CollectionName, UserType
-from database.db_manager import DatabaseManager, serialize_document
+from database.db_manager import DatabaseManager
+from database.db_user import UserRepository
 import random
 
 actual_id ='67162174f9b8ff18eda6aaaf'
 
-mongo_restaurant = MongoRestaurant(
-            owner_id='67153f2bc25d2da278c7efe8',
-            type='Diner',
-            name='The Great Eatery',
-            description=['Great food!', 'Cozy atmosphere'],
-            profile_link='http://example.com',
-            phone_number='123-456-7890'
-        )
-
-
-second_res = MongoRestaurant(
-            owner_id='67153f2bc25d2da278c7efe8',
-            type='Diner',
-            name='The Great Eatery Updated',
-            description=['Updated description'],
-            profile_link='http://dsadasd.com',
-            pure_vegan=True
-        )
 MY_URI = "mongodb+srv://dolongduy:vegan1234@test.ussqay0.mongodb.net/?retryWrites=true&w=majority&appName=Test"
 DB_NAME = "vegan"
 DB_MANAGER = DatabaseManager(MY_URI, DB_NAME)
 RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
+USER_REPO = UserRepository(DB_MANAGER)
 
 def test_create_restaurant(restaurant):
     return RESTAURANT_REPO.create_restaurant_db(restaurant)
 
 def test_get_restaurant_info(restaurant_id):
     return RESTAURANT_REPO.get_restaurant_info(restaurant_id)
+
+def test_get_user_data_from_id(user_id):
+    return USER_REPO.get_user_data_from_id(user_id)
+
+def test_get_user_auth_from_id(user_id):
+    return USER_REPO.get_user_auth_from_id(user_id)
 
 def create_categories_and_foods(shop_id: str):
     # Step 1: Create 5 categories
@@ -70,7 +60,7 @@ def create_categories_and_foods(shop_id: str):
             name=food_name,
             description=f"Delicious {food_name}",
             price=round(random.uniform(5.0, 20.0), 2),  # Random price between 5 and 20
-            picture_link=f"http://example.com/{food_name.lower().replace(' ', '_')}.jpg"
+            image_link=f"http://example.com/{food_name.lower().replace(' ', '_')}.jpg"
         )
         RESTAURANT_REPO.create_food_db(mongo_food)
 
@@ -99,5 +89,8 @@ def display_grouped_foods(restaurant_id: str):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        
-display_grouped_foods(actual_id)
+
+user_id = '671614d2bc0f745bb6a56323'
+owner_id = '671a4afd23928f9f3fc963e4'
+res_id = '672b5f5ee12ea6f036439eee'
+print(RESTAURANT_REPO.get_restaurant_foods_grouped_by_category(res_id))

@@ -163,6 +163,7 @@ class UserRepository:
         """
         Get the username and password from frontend and return its user_id from user_auth
         """
+        collection_users = ''
         if user_type == UserType.Diner:
             collection_users = self.db_manager.get_collection(
                 CollectionName.DinerAuthentication)
@@ -220,7 +221,7 @@ class UserRepository:
             collection = self.db_manager.get_collection(
                 CollectionName.DinerData)
         elif user_type == UserType.Owner:
-            self.db_manager.get_collection(
+            collection = self.db_manager.get_collection(
                 CollectionName.OwnerData)
         else:
             return False

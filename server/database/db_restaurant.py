@@ -21,7 +21,20 @@ class RestaurantRepository:
         restaurant_id = str(doc_restaurant_data.inserted_id)
 
         return restaurant_id
+    
+    def create_restaurant_template(self, owner_id: str) -> str:
+        """
+        Create the restaurant template for owner
+        """
+        collection_restaurant_data = self.db_manager.get_collection(
+            CollectionName.RestaurantData)
+        temp_restaurant = MongoRestaurant(owner_id, "temp")
+        doc_restaurant_data = collection_restaurant_data.insert_one(
+            asdict(temp_restaurant))
+        restaurant_id = str(doc_restaurant_data.inserted_id)
 
+        return restaurant_id
+    
     def get_restaurant_info(self, restaurant_id: str) -> MongoRestaurant:
         """
         Retrieve restaurant information (xecpet category and food) by restaurant ID.
@@ -180,7 +193,10 @@ class RestaurantRepository:
 
         # Retrieve foods for the specified restaurant
         foods = list(collection_food_data.find({"shop_id": restaurant_id}))
-
+        
+        for food in foods:
+            del food['_id']
+            
         # Retrieve categories for these IDs
         categories = list(collection_category_data.find(
             {"shop_id": restaurant_id}))
@@ -196,8 +212,13 @@ class RestaurantRepository:
         for food in foods:
             category_id = food['category_id']
             grouped_food[category_id]["food_list"].append(food)
-
-        return list(grouped_food.values())
+            
+        
+        result = list(grouped_food.values())
+        for category in result:
+            del category['_id']
+            
+        return result
     def create_query_for_filtered_restaurants(self, filter: MongoFilteredRestaurant) -> dict[str, object]:
         query = {}
         # Filter by boolean attributes using OR

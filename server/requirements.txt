@@ -3,3 +3,4 @@ flask-cors
 PyJWT
 Flask-Swagger-UI
 pymongo
+cloudinary

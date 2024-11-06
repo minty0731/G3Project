@@ -31,7 +31,7 @@ paths:
                   example: "+1234567890"
                 user_type:
                   type: string
-                  example: "admin"
+                  example: "owner"
               required:
                 - username
                 - password
@@ -164,6 +164,7 @@ paths:
                   error:
                     type: string
                     example: "Invalid credentials."
+                  
 
   /api/user/get_authentication:
     get:
@@ -193,6 +194,7 @@ paths:
                       user_id:
                         type: string
                         example: "user_id"
+                      
 
         '401':
           description: Invalid credentials
@@ -224,8 +226,24 @@ paths:
                   enum: [diner, owner]  # Example user types
                   example: "diner"
                 # Add other properties as needed (e.g., name, email)
+                fullName:
+                  type: string
+                  example: new_user
+                profileImageLink:
+                  type: string
+                  example: ssss
+                email:
+                  type: string
+                  example: user@example.com
+                phoneNumber:
+                  type: string
+                  example: "+1234567890"
               required:
                 - userType
+                - fullName
+                - profileImageLink
+                - email
+                - phoneNumber
       responses:
         '200':
           description: User data updated successfully
@@ -267,8 +285,25 @@ paths:
                   enum: [diner, owner]  # Example user types
                   example: "diner"
                 # Add other properties as needed (e.g., new username, new password)
+                username:
+                  type: string
+                  example: new_user
+                password:
+                  type: string
+                  example: pasworkd
+                authenticationType:
+                  type: string
+                  enum: [base, google]  # Example user types
+                  example: "base"
+                authenticationIdentifier:
+                  type: string
+                  example: "21123131"
               required:
                 - userType
+                - username
+                - password
+                - authenticationType
+                - authenticationIdentifier
       responses:
         '200':
           description: User authentication updated successfully
@@ -294,7 +329,7 @@ paths:
   /api/user/get_users:
     get:
       summary: Get All Users
-      description: Retrieves a list of all users.
+      description: Retrieves a list of all users data., including diners and owner
       operationId: getAllUsers
       responses:
         '200':
@@ -307,15 +342,18 @@ paths:
                   type: object
                   properties:
                     # Define properties of the user object as needed
-                    username:
+                    fullname:
                       type: string
                       example: "user1"
                     email:
                       type: string
                       example: "user@example.com"
-                    user_id:
+                    phone_number:
                       type: string
-                      example: "user_id"
+                      example: "012345678"
+                    profile_image_link:
+                      type: string
+                      example: "something/something.png"
 
 components:
   securitySchemes:

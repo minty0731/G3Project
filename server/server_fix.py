@@ -24,6 +24,7 @@ CORS(app)
 
 # improtant constance
 TEST_KEY = 'vegan-review-test-key'
+CLOUDINARY_KEY = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
 USER_REPO = UserRepository(DB_MANAGER)
 RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
 
@@ -48,10 +49,10 @@ app.register_blueprint(swagger_ui_blueprint, url_prefix=OPENAPI_DOC)
 """
 Helper function that need jsonify or wrapper functions
 """
-def api_response_message(key: str, message: str, status: int) -> tuple[object, int]:
+def api_response_message(key: str, message: str, status: int = 201) -> tuple[object, int]:
     return jsonify({key: message}), status
 
-def api_response_data(message_key: str, message_result: str, sent_key: str, sent_data: str, status: int) -> tuple[object, int]:
+def api_response_data(message_key: str, message_result: str, sent_key: str, sent_data: str, status: int = 200) -> tuple[object, int]:
     return jsonify({message_key: message_result, sent_key: sent_data}), status
 
 def require_jwt_token(func):
@@ -102,9 +103,16 @@ API functions for users
 def signup():
     json_data = request.get_json()
     signup_data = create_signup_data_from_json(json_data)
-
+    user_type = json_data.get('userType')  # Get user type from the request
+    
     user_id = USER_REPO.create_user(signup_data)
+    
     if user_id:
+        
+        if user_type == UserType.Owner:
+            restaurant_id = RESTAURANT_REPO.create_restaurant_template(user_id)
+            USER_REPO.update_owner_restaurant_id(user_id, restaurant_id)
+        
         return api_response_message(ResponseKey.UserID, user_id, 201)
     else:
         return api_response_message(ResponseKey.Error, 'Invalid input', 400)
@@ -140,7 +148,7 @@ def get_user(user_id):
         return api_response_message(ResponseKey.Error, 'Invalid credentials', 401)
     
 # Return user info after fetching their id
-@app.route('/api/user/get_authentication', methods=['GET'])
+@app.route('/api/user/get_auth', methods=['GET'])
 @require_jwt_token
 def get_authentication(user_id):
     """
@@ -155,7 +163,7 @@ def get_authentication(user_id):
         return api_response_message(ResponseKey.Error, 'Invalid credentials', 401)
     
 # Update user info after fetching their id    
-@app.route('/api/user/update_data', methods=['PATCH'])
+@app.route('/api/user/update_user', methods=['PATCH'])
 @require_jwt_token  # Ensure the user is authenticated
 def update_user_data(user_id):
     """
@@ -193,13 +201,13 @@ def update_user_auth(user_id):
     if user_type not in [UserType.Diner, UserType.Owner]:
         return api_response_message(ResponseKey.Error, 'Invalid user types', 401)
 
+    auth_data = create_user_auth_from_json(data, user_id)
+    
     # Create data objects based on your model (adjust as necessary)
     if user_type == UserType.Diner:
-        diner_data = create_diner_data_from_json(data)
-        success = USER_REPO.update_diner_data(user_id, diner_data)  # Update diner data
+        success = USER_REPO.update_diner_auth(user_id, auth_data)  # Update diner data
     else:  # owner
-        owner_data = create_owner_data_from_json(data)  # Assuming OwnerData is a valid model
-        success = USER_REPO.update_owner_data(user_id, owner_data)  # Update owner data
+        success = USER_REPO.update_owner_auth(user_id, auth_data)  # Update owner data
 
     if success:
         return api_response_message(ResponseKey.Message, 'User data updated successfully', 200)
@@ -324,7 +332,7 @@ def get_restaurant_foods(restaurant_id):
     try:
         restaurant_food_list = RESTAURANT_REPO.get_restaurant_foods_grouped_by_category(restaurant_id)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods successfully', 
-                                 ResponseKey.RestaurantFoods, asdict( restaurant_food_list))
+                                 ResponseKey.RestaurantFoods, restaurant_food_list)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
 
@@ -363,7 +371,7 @@ def get_all_restaurant_info_list():
         item_per_page = json_data.get('itemPerPage')
         list_info = RESTAURANT_REPO.get_home_restaurant_list(page_number, item_per_page)
         return api_response_data(ResponseKey.Message, 'Get restaurant info list successfully', 
-                                 ResponseKey.RestaurantListInfo, asdict(list_info))
+                                 ResponseKey.RestaurantListInfo, dict(list_info))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
@@ -378,7 +386,7 @@ def get_all_restaurants_food_list():
         item_per_page = json_data.get('itemPerPage')
         list_foods= RESTAURANT_REPO.get_home_food_list(page_number, item_per_page)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods list successfully', 
-                                 ResponseKey.RestaurantListFoods, asdict(list_foods))
+                                 ResponseKey.RestaurantListFoods, dict(list_foods))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
@@ -393,7 +401,7 @@ def get_filtered_restaurant_info_info():
         filter_data = create_filtered_restaurant_from_json(json_data)
         list_info = RESTAURANT_REPO.get_filtered_restaurant_list(filter_data)
         return api_response_data(ResponseKey.Message, 'Get all filtered restaurant info list successfully', 
-                                 ResponseKey.RestaurantFilteredFoods, asdict(list_info))
+                                 ResponseKey.RestaurantFilteredFoods, dict(list_info))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 

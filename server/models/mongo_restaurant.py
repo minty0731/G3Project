@@ -42,7 +42,7 @@ class MongoRestaurant:
     address_collection: List[MongoAddress] = field(default_factory=list)
     phone_number: str = ''
     open_hours: dict = ''
-    open_days: list[str] = field(default_factory=list)
+    open_days: list[str] = ''
     
     pure_vegan: bool = False
     take_away: bool = False

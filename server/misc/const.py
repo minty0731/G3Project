@@ -24,8 +24,8 @@ class ResponseKey:
     RestaurantListInfo = 'list_total_restaurant_info'
     RestaurantListFoods= 'list_total_restaurant_foods'
     RestaurantFilteredFoods= 'list_filtered_restaurant_foods'
-    KeyUser = 'user'
-    KeyAuth = 'authentication'
+    KeyUser = 'user_data'
+    KeyAuth = 'auth_data'
 
 
 class AuthenticationType:
