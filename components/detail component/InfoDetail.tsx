@@ -69,28 +69,36 @@ const InfoDetailComponent: React.FC = () => {
     }
 
     return (
-        <div className="grid grid-cols-[40%_60%] grid-rows-[repeat(3,_min-content)_auto_repeat(5,_min-content)] border-t border-b">
-            {titles.map((title, index) => (
-                <React.Fragment key={index}>
-                    <div className="border p-2 bg-yellow-100">{title}</div>
-                    <div className="border p-2">
-                        {index === 4 ? (
-                            <div>
-                                <a href="https://shorturl.at/pZyab">
-                                    <ImageLoader path='v1722315790/Capture_fiohdy.png' alt='map' width={1000} height={400} cloudinaryAttributes={{
-                                        crop: "fill",
-                                        gravity: "auto",
-                                        quality: "auto",
-                                        fetch_format: "auto",
-                                    }} />
-                                </a>
-                            </div>
-                        ) : (
-                            dataValues[index] || 'No data available'
-                        )}
+        <div className="flex gap-4 border-t border-b p-4">
+            {/* Left Column: Store Info */}
+            <div className="w-1/2 space-y-2">
+                {titles.map((title, index) => (
+                    <div key={index} className="flex">
+                        <div className="w-1/3 font-semibold bg-yellow-100 p-2 border">{title}</div>
+                        <div className="w-2/3 p-2 border">
+                            {dataValues[index] || 'No data available'}
+                        </div>
                     </div>
-                </React.Fragment>
-            ))}
+                ))}
+            </div>
+
+            {/* Right Column: Image */}
+            <div className="w-1/2 flex items-center justify-center">
+                <a href="https://shorturl.at/pZyab">
+                    <ImageLoader
+                        path='v1722315790/Capture_fiohdy.png'
+                        alt='map'
+                        width={500}
+                        height={400}
+                        cloudinaryAttributes={{
+                            crop: "fill",
+                            gravity: "auto",
+                            quality: "auto",
+                            fetch_format: "auto",
+                        }}
+                    />
+                </a>
+            </div>
         </div>
     );
 };
