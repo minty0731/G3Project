@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
         // If no token is found, redirect to the login page
         return NextResponse.redirect(new URL('/', request.url));
     }
-    const response = await fetch('http://127.0.0.1:8080/api/user/get_authentication', {
+    const response = await fetch('http://127.0.0.1:8080/api/user/get_auth', {
         method: 'GET',
         headers: {
             'Authorization': `${token}`,
