@@ -1,45 +1,54 @@
 'use client'
+import React, { useState } from 'react';
+import ImageLoader from './ImageLoader';
 import Link from 'next/link';
-import React,{useState} from 'react';
-import Image from 'next/image';
-import FilterDropdown from './FilterDropdown';
-import { IoSearchOutline } from 'react-icons/io5';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { vegan } from '@/constant/ImageConstant';
+import { IoIosNotificationsOutline } from "react-icons/io";
+
 const Navbar: React.FC = () => {
-
-  //get URL 
-  const pathname = usePathname();
-
-  //active link when it's clicked or hover
-  const linkClasses = (path: string): string => 
-    `hover:text-green-500  ${pathname === path ? 'font-medium text-green-500 custom-underline' : ''}`;
-
+  const router = useRouter()
+  const logout = () => {
+    router.push("/login")
+  }
   return (
-    <header className="flex h-24 items-center justify-center max-w-screen-desktop mx-auto px-4">
-      <div className="flex items-center gap-2">
-        <Image src="/image/vegan.png" alt="Logo" width={256} height={256} className="h-14 w-14" />
-        <h1 className="font-medium text-green-600 text-lg">Vegan Review</h1>
-        <FilterDropdown/>
+    <div className=" absolute top-0 left-0 right-0 w-full shadow-lg z-50 bg-white">
+      <div className=" flex items-center justify-between py-4 px-4">
+        <div className="flex items-center gap-5">
+          <ImageLoader
+            path={vegan.link}
+            alt={vegan.alt}
+            width={52}
+            height={52}
+          />
+          <h1 className="font-semibold text-xl">Kênh Cửa Hàng</h1>
+        </div>
+        <div className="flex items-center">
+          <IoIosNotificationsOutline className="text-3xl" />
+          <div className="h-[2rem] w-px bg-gray-400 mx-4"></div>
+
+          <div className="flex items-center dropdown dropdown-bottom dropdown-end dropdown-hover gap-5">
+            <h1>cuongpeter</h1>
+            <div tabIndex={0} role="button" className="">
+              <div className="avatar">
+                <div className="w-12 rounded-full hover:ring-primary ring-offset-base-100 ring">
+                  <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="User Avatar" />
+                </div>
+              </div>
+            </div>
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 border shadow-lg">
+              <li>
+                <Link href="/profile">Tài khoản</Link>
+              </li>
+              <li>
+                <button onClick={logout}>Đăng xuất</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
       </div>
-      <nav className="mx-auto hidden gap-8 text-md font-normal md:flex ">
-        <Link href="/" className={linkClasses('/')} prefetch={false}>
-          Quán ăn
-        </Link>
-        <Link href="/" className={linkClasses('#')} prefetch={false}>
-          Cửa hàng
-        </Link>
-        <Link href="/" className={linkClasses('#')} prefetch={false}>
-          Siêu thị chay
-        </Link>
-        <Link href="/" className={linkClasses('#')} prefetch={false}>
-          Đồ dùng chay
-        </Link>
-      </nav>
-      <div className="ml-auto flex items-center gap-8">
-        <IoSearchOutline size={32} />
-        <button name="Đăng Nhập" className="btn bg-green-600 text-white hover:bg-green-800">Đăng Nhập</button>
-      </div>
-    </header>
+    </div>
   );
 }
 
