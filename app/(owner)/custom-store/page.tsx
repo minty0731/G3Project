@@ -1,14 +1,17 @@
 "use client"
 import React, { useState } from 'react';
 import { DeliveryLink, deliveryCompanies } from '@/constant/DeliveryLink';
+import { getRestaurantID } from '@/constant/RestaurantID';
+import { ImageUpload } from '@/components/ImageUpload';
+import { AddressData } from '@/constant/AddressData';
 import Cookies from 'js-cookie';
 const CustomStorePage = () => {
     const [storeName, setStoreName] = useState<string>("");
-    const [profileImage, setProfileImage] = useState<string>("this is profile link")
-    const [imageCollection, setImageCollection] = useState<string[]>(["sample link 1", "sample link 2"])
-    const [categoryDesc, setCategoryDesc] = useState<string[]>(["this is the description of the store"])
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [collectionImages, setCollectionImages] = useState<string[]>(new Array(4).fill(null));
+    const [categoryDesc, setCategoryDesc] = useState<string>()
     const [branches, setBranches] = useState<number>(1);
-    const [addresses, setAddresses] = useState<string[]>(Array(branches).fill(""));
+    const [addresses, setAddresses] = useState<AddressData[]>(Array(branches).fill(""));
     const [hours, setHours] = useState<string>("");
     const [openDays, setOpenDays] = useState<string>("");
     const [highPrice, setHighPrice] = useState<number>(0);
@@ -19,8 +22,11 @@ const CustomStorePage = () => {
     const [takeout, setTakeout] = useState<boolean>(false);
     const [dineIn, setDineIn] = useState<boolean>(false);
     const [buffet, setBuffet] = useState<boolean>(false);
-    const [deliveryLinks, setDeliveryLinks] = useState<DeliveryLink[]>([{ name: "", link: "" }]);
+    const [deliveryLinks, setDeliveryLinks] = useState<DeliveryLink[]>([{ company: "", link: "" }]);
     const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+
+    //separate var
+    const [reload, setReload] = useState(false);
 
     const handleBranchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const numberOfBranches = parseInt(e.target.value, 10) || 1;
@@ -28,9 +34,14 @@ const CustomStorePage = () => {
         setAddresses(Array(numberOfBranches).fill(''));
     };
 
-    const handleAddressChange = (index: number, value: string) => {
+    const handleAddressChange = (index: number, field: keyof AddressData, value: string) => {
         const newAddresses = [...addresses];
-        newAddresses[index] = value;
+        newAddresses[index] = {
+            ...newAddresses[index],
+            [field]: value,
+            map_location: "",  // Always set map_location as empty
+            branch_name: ""    // Always set branch_name as empty
+        }
         setAddresses(newAddresses);
     };
     const handleLinkChange = (index: number, field: keyof DeliveryLink, value: string) => {
@@ -40,7 +51,7 @@ const CustomStorePage = () => {
     };
 
     const addLink = () => {
-        setDeliveryLinks([...deliveryLinks, { name: "", link: "" }]);
+        setDeliveryLinks([...deliveryLinks, { company: "", link: "" }]);
     };
 
     const removeLink = (index: number) => {
@@ -54,6 +65,29 @@ const CustomStorePage = () => {
                 : [...prevMethods, method]
         );
     };
+
+    const resetData = () => {
+        setReload(!reload);
+        setStoreName("")
+        setPhoneNumber("")
+        setAddresses([])
+        setBranches(1)
+        setBuffet(false)
+        setCategoryDesc("")
+        setCuisineType("")
+        setBuffet(false)
+        setDineIn(false)
+        setTakeout(false)
+        setIsVegan(false)
+        setDeliveryLinks([{ company: "", link: "" }])
+        setHours("")
+        setOpenDays("")
+        setLowPrice(0)
+        setHighPrice(0)
+        setPaymentMethods([])
+        setProfileImage(null);
+        setCollectionImages(new Array(4).fill(null));
+    }
     const cuisineOptions = [
         "Việt Nam", "Nhật Bản", "Hàn Quốc", "Trung Quốc", "Thái",
         "Ý", "Pháp", "Mê Xi Cô", "Ấn Độ", "Mỹ",
@@ -65,49 +99,49 @@ const CustomStorePage = () => {
     const handleSubmitStore = async () => {
         const data = {
             name: storeName,
-            category_description: categoryDesc,
-            profile_image_link: profileImage,
-            promo_image_collection: imageCollection,
-            address_collection: addresses,
-            open_hours: hours,
-            open_days: openDays,
-            highest_price: highPrice,
-            lowest_price: lowPrice,
-            phone_number: phoneNumber,
-            food_country_type: cuisineType,
-            pure_vegan: isVegan,
-            take_away: takeout,
-            dine_in: dineIn,
+            categoryDescription: categoryDesc,
+            addressCollection: addresses,
+            openHours: hours,
+            openDays: openDays,
+            highestPrice: highPrice,
+            lowestPrice: lowPrice,
+            phoneNumber: phoneNumber,
+            foodCountryType: cuisineType,
+            pureVegan: isVegan,
+            takeAway: takeout,
+            dineIn: dineIn,
             buffet: buffet,
-            delivery_collection: deliveryLinks,
-            payment_method: paymentMethods
+            deliveryCollection: deliveryLinks,
+            paymentMethod: paymentMethods,
+            profileImage,
+            collectionImages
+
         };
         console.log(data)
-        try {
-            const token = Cookies.get('token')
-            const res = await fetch('http://127.0.0.1:8080/api/restaurant', {
-                method: 'POST',
+        const token = Cookies.get('token')
+        if (token) {
+            const resID = await getRestaurantID(token)
+            const response = await fetch(`http://127.0.0.1:8080/api/restaurant/${resID}`, {
+                method: 'PATCH',
                 headers: {
                     'Authorization': `${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
             });
-            if (res.ok) {
-                const data = await res.json();
-                console.log(data.restaurant_id)
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data.message)
             } else {
                 console.error('Error fetching data');
             }
-        } catch (error) {
-            console.error('Fetch error:', error);
         }
 
     }
     return (
         <div>
             <div className="h-full w-full bg-white shadow-lg rounded-2xl p-6">
-                <div className="grid grid-cols-1 gap-6 pb-20">
+                <div className="grid grid-cols-1 gap-6 pb-20" key={reload ? 'reload-true' : 'reload-false'}>
                     {/* Store Name */}
                     <div>
                         <label className="font-semibold">Tên cửa hàng:</label>
@@ -121,7 +155,7 @@ const CustomStorePage = () => {
                             type="number"
                             value={branches}
                             onChange={handleBranchChange}
-                            className="w-full p-2 border rounded"
+                            className="w-full p-2 border rounded excluded"
                             placeholder="Nhập số chi nhánh"
                         />
                     </div>
@@ -133,8 +167,8 @@ const CustomStorePage = () => {
                             <input
                                 key={index}
                                 type="text"
-                                value={addresses[index]}
-                                onChange={(e) => handleAddressChange(index, e.target.value)}
+                                value={addresses[index]?.address_text || ""}
+                                onChange={(e) => handleAddressChange(index, "address_text", e.target.value)}
                                 className="w-full p-2 border rounded mt-2"
                                 placeholder={`Địa chỉ chi nhánh ${index + 1}`}
                             />
@@ -291,8 +325,8 @@ const CustomStorePage = () => {
                             <div key={index} className="flex items-center space-x-2 mb-2">
                                 <select
                                     className="w-full p-2 border rounded"
-                                    value={link.name}
-                                    onChange={(e) => handleLinkChange(index, 'name', e.target.value)}
+                                    value={link.company}
+                                    onChange={(e) => handleLinkChange(index, 'company', e.target.value)}
                                 >
                                     <option value="">Chọn công ty giao hàng</option>
                                     {deliveryCompanies.map((company, idx) => (
@@ -312,11 +346,22 @@ const CustomStorePage = () => {
                         <button onClick={addLink} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Thêm Link</button>
                     </div>
                 </div>
-
                 {/* Fixed Bottom Navbar */}
             </div>
-            <div className=" w-full bg-gray-100 border-t p-4 flex justify-end space-x-4">
-                <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Hủy</button>
+            <div className="h-full w-full bg-white shadow-lg rounded-2xl p-6 mt-6" key={reload ? 'reload-true' : 'reload-false'}>
+                <ImageUpload
+                    profileImage={profileImage}
+                    setProfileImage={setProfileImage}
+                    collectionImages={collectionImages}
+                    setCollectionImages={setCollectionImages}
+                />
+                <div className="flex mt-10">
+                    <h1 className="w-60 font-medium">*Giới thiệu về cửa hàng</h1>
+                    <textarea rows={10} className="w-full p-2 border-2 rounded" placeholder="Nhập tên cửa hàng" onChange={(e) => setCategoryDesc(e.target.value)} />
+                </div>
+            </div>
+            <div className="fixed bottom-0 left-2 w-full bg-gray-100 border-t p-4 px-16 flex justify-end space-x-4">
+                <button onClick={resetData} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Hủy</button>
                 <button onClick={handleSubmitStore} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Lưu</button>
             </div>
         </div>

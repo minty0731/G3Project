@@ -1,5 +1,5 @@
 export interface DeliveryLink {
-    name: string;
+    company: string;
     link: string;
 }
 

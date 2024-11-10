@@ -8,8 +8,10 @@ const Sidebar = () => {
 
     const links = [
         { href: "/overview", label: "Tổng quan" },
-        { href: "/custom-store", label: "Quản lý cửa hàng" },
+        { href: "/display-store", label: "Hiển thị cửa hàng" },
+        { href: "/custom-store", label: "Chỉnh sửa cửa hàng" },
         { href: "/product-management", label: "Quản lý sản phẩm" },
+        { href: "/add-new-product", label: "Thêm sản phẩm" },
         { href: "/review-management", label: "Quản lý đánh giá" },
         { href: "/notifications", label: "Thông báo" }
     ];

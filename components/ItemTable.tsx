@@ -3,14 +3,11 @@ import React, { useState } from 'react'
 import { FiSearch } from 'react-icons/fi';
 import ImageLoader from './ImageLoader';
 import { vegan } from '@/constant/ImageConstant';
-interface Prodcut {
-    category: string,
-    name: string,
-    price: number,
-    image: string
-}
+import Link from 'next/link';
+
+
 export const ItemTable = () => {
-    const [products, setProducts] = useState<Prodcut[]>([]);
+    const [products, setProducts] = useState<[]>([]);
     const [search, setSearch] = useState('');
     return (
         <div className="flex flex-col gap-4">
@@ -34,7 +31,7 @@ export const ItemTable = () => {
                 </div>
 
                 {/*Adding product*/}
-                <button className="btn btn-wide bg-[#ff4444] text-white hover:bg-[#ED3C3C]">Thêm sản phẩm mới</button>
+                <Link href={"/add-new-product"}><button className="btn btn-wide bg-[#ff4444] text-white hover:bg-[#ED3C3C]">Thêm sản phẩm mới</button></Link>
             </div>
             {/*Products table*/}
             <table className="table min-w-full bg-white">

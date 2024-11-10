@@ -130,7 +130,6 @@ const LoginPage = () => {
                                     <FcGoogle className="text-3xl" />
                                     Đăng nhập bằng Google
                                 </button>
-                                <button ></button>
                             </div>
                         </form>
                     </div>

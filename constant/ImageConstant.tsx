@@ -25,3 +25,6 @@ export const bctIcon = { link: "v1719838369/bct_hxqtc3.png", alt: "bct-icon" }
 /*Singup and Login Image*/
 export const signupLoginBanner = { link: "v1720356842/Sign_In_Up_Cover_zux7hs.png", alt: "signup-login-cover-page" }
 export const frontStoreBanner = { link: "v1729772342/storefront_yrbdsl.png", alt: "front-store-cover" }
+/*Upload image icon */
+export const uploadImageIcon = { link: "v1731034616/generative-image_iafsgs.png", alt: "upload-image-icon" }
+
