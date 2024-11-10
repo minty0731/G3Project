@@ -1,11 +1,130 @@
-Mình đã ăn ở Quán Bún Chay và thực sự ấn tượng với chất lượng món ăn cũng như dịch vụ. Bún rất ngon, nêm nếm vừa miệng, topping phong phú và tươi ngon. Không gian quán sạch sẽ, thoáng mát, nhân viên nhiệt tình và thân thiện. Đây là một địa điểm không thể bỏ qua cho những ai yêu thích ẩm thực chay.
+import React, { useState, useEffect } from 'react';
+import { IoMdCloseCircleOutline } from "react-icons/io";
 
-                    Từ lúc bước vào quán, mình đã cảm nhận được không khí ấm cúng và dễ chịu. Bàn ghế được sắp xếp gọn gàng, không gian thoáng đãng với ánh sáng tự nhiên. Nhân viên phục vụ rất nhanh nhẹn và chu đáo, luôn nở nụ cười và sẵn sàng hỗ trợ khách hàng.
+interface Filter {
+    name: string;
+    checked: boolean; // Track checked status
+}
 
-                    Mình đã thử nhiều món trong menu và tất cả đều tuyệt vời. Bún bò chay thơm ngon với nước dùng đậm đà, nấm và rau củ tươi ngon. Bún riêu chay lại có vị chua nhẹ, thơm mùi riêu và rất nhiều topping. Không thể không nhắc đến bún chả chay, với các loại đậu hũ và nấm nướng vừa tới, ăn kèm với bún và nước chấm tuyệt hảo.
+interface Category {
+    name: string;
+    filters: Filter[];
+}
 
-                    Giá cả ở đây cũng rất hợp lý so với chất lượng món ăn và dịch vụ. Mình thật sự hài lòng và cảm thấy xứng đáng với số tiền bỏ ra. Quán Bún Chay đã trở thành một trong những quán yêu thích của mình và mình sẽ giới thiệu cho bạn bè và gia đình đến thưởng thức.
+interface SidebarProp {
+    isOpen: boolean;
+    toggleSidebar: () => void;
+    categories: Category[];
+}
 
-                    Chắc chắn mình sẽ quay lại đây nhiều lần nữa để thưởng thức thêm nhiều món ngon khác. Cảm ơn Quán Bún Chay đã mang đến cho mình những trải nghiệm ẩm thực tuyệt vời!
+const Sidebar: React.FC<SidebarProp> = ({ isOpen, toggleSidebar, categories = [] }) => {
+    const [updatedCategories, setUpdatedCategories] = useState<Category[]>(categories);
+    const [priceRange, setPriceRange] = useState<{ min: number | string; max: number | string }>({
+        min: '',
+        max: ''
+    });
 
-                    
+    useEffect(() => {
+        setUpdatedCategories(categories);
+    }, [categories]);
+
+    // Handle filter change
+    const handleFilterChange = (categoryIndex: number, filterIndex: number) => {
+        const newCategories = [...updatedCategories];
+        newCategories[categoryIndex].filters[filterIndex].checked = !newCategories[categoryIndex].filters[filterIndex].checked;
+        setUpdatedCategories(newCategories);
+    };
+
+    // Reset filters and close sidebar
+    const resetFiltersAndClose = () => {
+        const newCategories = updatedCategories.map(category => ({
+            ...category,
+            filters: category.filters.map(filter => ({
+                ...filter,
+                checked: false
+            }))
+        }));
+        setUpdatedCategories(newCategories);
+        setPriceRange({ min: '', max: '' });  // Reset price range
+        toggleSidebar();
+    };
+
+    // Alert checked filters and then reset filters and close sidebar
+    const handleData = () => {
+        const checkedFilters = updatedCategories.flatMap((category) =>
+            category.filters
+                .filter(filter => filter.checked)
+                .map(filter => `${filter.name}`)
+        ).join('\n');
+
+        alert(`${checkedFilters}\nPrice Range: ${priceRange.min} - ${priceRange.max}` || "No filters selected.");
+        resetFiltersAndClose();
+    };
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'min' | 'max') => {
+        const value = e.target.value;
+        setPriceRange(prevState => ({
+            ...prevState,
+            [type]: value
+        }));
+    };
+
+    return (
+        <div
+            className={`fixed top-0 right-0 h-screen w-80 bg-white shadow-md transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'} z-[60]`}
+        >
+            <div className="fixed top-0 w-full bg-[#2B2F4C] p-4 text-white flex items-center justify-between h-20">
+                <h3 className="text-lg">Bộ lọc</h3>
+                <IoMdCloseCircleOutline onClick={toggleSidebar} className="text-2xl hover:cursor-pointer" />
+            </div>
+            <div className="flex flex-col mt-20 p-4 overflow-y-auto h-[calc(100%-5rem)]">
+                {/* Price Range Inputs */}
+                <div className="flex flex-col gap-3 mb-5">
+                    <label className="text-md font-semibold">Price Range</label>
+                    <div className="flex gap-4">
+                        <div className="w-full">
+                            <input
+                                type="number"
+                                value={priceRange.min}
+                                onChange={(e) => handlePriceChange(e, 'min')}
+                                className="input input-bordered w-full"
+                                placeholder="Giá thấp"
+                            />
+                        </div>
+                        <div className="w-full">
+                            <input
+                                type="number"
+                                value={priceRange.max}
+                                onChange={(e) => handlePriceChange(e, 'max')}
+                                className="input input-bordered w-full"
+                                placeholder="Giá cao"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {updatedCategories.map((category, categoryIndex) => (
+                    <div key={categoryIndex} className="flex flex-col w-full mt-2 py-3 px-4 gap-2">
+                        <h1 className="bg-custom-green text-white p-3 rounded-md">{category.name}</h1>
+                        {category.filters.map((filter, filterIndex) => (
+                            <label key={filterIndex} className="flex items-center justify-start gap-4 cursor-pointer p-2 rounded-md">
+                                <input
+                                    type="checkbox"
+                                    checked={filter.checked}
+                                    onChange={() => handleFilterChange(categoryIndex, filterIndex)}
+                                    className="checkbox"
+                                />
+                                <span className="text-md">{filter.name}</span>
+                            </label>
+                        ))}
+                    </div>
+                ))}
+                <div className="flex items-center justify-center mt-5">
+                    <button className="btn btn-wide bg-[#2B2F4C] text-white hover:bg-gray-700 mt-10" onClick={handleData}>Lọc cửa hàng</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Sidebar;

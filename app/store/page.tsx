@@ -5,19 +5,9 @@ import Store from '@/components/Store';
 import Sidebar from '@/components/Sidebar';
 import { StoreInfo } from '@/container/StoreConstant';
 import { link } from 'fs';
-interface Filter {
-    name: string;
-    checked: boolean;
-}
-
-interface Category {
-    name: string;
-    filters: Filter[];
-}
 
 const StorePage: React.FC = () => {
     const [products, setProducts] = useState<StoreInfo[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -41,14 +31,6 @@ const StorePage: React.FC = () => {
             .catch(error => console.error('Error fetching products:', error));
     }, []);
 
-    useEffect(() => {
-        fetch('http://localhost:5000/filter') // Replace with your actual API endpoint
-            .then(res => res.json())
-            .then(data => {
-                setCategories(data.categories);
-            })
-            .catch(error => console.error('Error fetching categories:', error));
-    }, []);
 
     const totalPages = Math.ceil(products.length / itemsPerPage);
 
@@ -84,7 +66,7 @@ const StorePage: React.FC = () => {
                     ))}
                 </div>
             </div>
-            <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} categories={categories} />
+            <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
             {sidebarOpen && (
                 <div
                     onClick={toggleSidebar}

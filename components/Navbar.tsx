@@ -2,12 +2,15 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import FilterDropdown from "./FilterDropdown";
+import { PopupSearchBar } from "./PopupSearchBar";
 import { IoSearchOutline } from "react-icons/io5";
 import { usePathname } from "next/navigation";
 import ImageLoader from "./ImageLoader";
 import { vegan } from "@/container/ImageConstant";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+
+
 const Navbar: React.FC = () => {
   const router = useRouter();
   // Get URL
@@ -41,6 +44,12 @@ const Navbar: React.FC = () => {
     setUser(!!token); // Set user to true if token exists, false otherwise
   }
 
+  const [isSearchBarVisible, setIsSearchBarVisible] = useState<boolean>(false);
+
+  // Toggle function to show or hide the search bar
+  const toggleSearchBar = (): void => {
+    setIsSearchBarVisible(prevState => !prevState);
+  };
   // Active link when it's clicked or hover
   const linkClasses = (path: string): string =>
     `hover:text-green-500 ${pathname === path ? "font-medium text-green-500 custom-underline" : ""}`;
@@ -80,7 +89,7 @@ const Navbar: React.FC = () => {
           </nav>
         </div>
         <div className="ml-auto flex items-center gap-8">
-          <IoSearchOutline size={30} />
+          <IoSearchOutline className="hover:cursor-pointer" onClick={toggleSearchBar} size={30} />
           <div className="flex gap-3">
             {user ? (
               <>
@@ -118,6 +127,7 @@ const Navbar: React.FC = () => {
             )}
           </div>
         </div>
+        {isSearchBarVisible && <PopupSearchBar onClose={toggleSearchBar} />}
       </div>
     </header>
   );
