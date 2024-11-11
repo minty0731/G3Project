@@ -35,7 +35,8 @@ class CloudinaryManager:
 
 
         # Remove metadata if present (e.g., data:image/jpeg;base64,)
-        header, encoded = base64_string.split(',', 1)
+        if ',' in base64_string:
+            header, encoded = base64_string.split(',', 1)
 
         # Debug: Print the length of the Base64 string
         
