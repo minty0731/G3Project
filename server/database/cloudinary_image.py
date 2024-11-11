@@ -28,7 +28,7 @@ class CloudinaryManager:
         response = cloudinary.uploader.upload(image_path, folder = folder, public_id = public_id)
         return response
 
-    def upload_image_from_base64(self, base64_str: str, folder:str = '', public_id: str = None):
+    def upload_image_from_base64(self, base64_string: str, folder:str = '', public_id: str = None):
         """Uploads an image from base64, convert to binary before upload to directly to Cloudinary."""
 
         # Check if the input is a string

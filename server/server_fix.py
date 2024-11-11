@@ -258,15 +258,8 @@ def update_restaurant_info(user_id, restaurant_id):
     restaurant_data = create_restaurant_data_from_json(user_id, json_data)
     
     if profile_image_json is not None:
-        restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(profile_image_json, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_profile")
-            
-    if len(promo_images_json) > 0:
-        promo_image_links = []
-        for index, image in enumerate(promo_images_json):
-            promo_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(image, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_promo_{index + 1}")
-            promo_image_links.append(promo_image_link)
-        
-        restaurant_data.promo_image_collection = promo_image_links
+        print(profile_image_json)
+
     
     restaurant_update = RESTAURANT_REPO.update_restaurant_db(restaurant_id, restaurant_data)
     if restaurant_update:
