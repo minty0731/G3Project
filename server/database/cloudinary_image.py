@@ -23,7 +23,7 @@ class CloudinaryManager:
             api_secret=api_secret
         )
 
-    def upload_image(self, image_path: str, folder: str = '', public_id: str = None):
+    def upload_image(self, image_path: object, folder: str = '', public_id: str = None):
         """Uploads a single image to a specified folder in Cloudinary and returns the response."""
         response = cloudinary.uploader.upload(image_path, folder = folder, public_id = public_id)
         return response
@@ -36,24 +36,23 @@ class CloudinaryManager:
             raise TypeError("Expected a string for the Base64 input.")
 
         # Remove metadata if present (e.g., data:image/jpeg;base64,)
-        if ',' in base64_string:
-            base64_string = base64_string.split(',', 1)[1]  # Split only once
+        header, encoded = image_data.split(',', 1)
 
         # Debug: Print the length of the Base64 string
         print(f"Base64 string length: {len(base64_string)}")
-
+        image_data = base64.b64decode(encoded)
         # Decode the Base64 string
-        try:
-            image_data = base64.b64decode(base64_string)
-        except Exception as e:
-            raise ValueError(f"Failed to decode Base64 string: {e}")
+        # try:
+        #     image_data = base64.b64decode(encoded)
+        # except Exception as e:
+        #     raise ValueError(f"Failed to decode Base64 string: {e}")
         
-        if isinstance(image_data, bytes):
-            image_file = io.BytesIO(image_data)
-        else:
-            return None
+        # if isinstance(image_data, bytes):
+        #     image_file = io.BytesIO(image_data)
+        # else:
+        #     return None
 
-        return self.upload_image(image_file, folder=folder, public_id=public_id)
+        return self.upload_image(image_data, folder=folder, public_id=public_id)
     
     def generate_url(self, public_id: str, width : int = None, height : str = None, crop: str ='fill'):
         """Generates a URL for a Cloudinary image with optional transformations."""
