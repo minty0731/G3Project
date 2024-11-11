@@ -31,15 +31,14 @@ class CloudinaryManager:
     def upload_image_from_base64(self, base64_string: str, folder:str = '', public_id: str = None):
         """Uploads an image from base64, convert to binary before upload to directly to Cloudinary."""
 
-        # Check if the input is a string
-        if not isinstance(base64_string, str):
-            raise TypeError("Expected a string for the Base64 input.")
+        print(f"Base64 string length: {len(base64_string)}")
+
 
         # Remove metadata if present (e.g., data:image/jpeg;base64,)
-        header, encoded = image_data.split(',', 1)
+        header, encoded = base64_string.split(',', 1)
 
         # Debug: Print the length of the Base64 string
-        print(f"Base64 string length: {len(base64_string)}")
+        
         image_data = base64.b64decode(encoded)
         # Decode the Base64 string
         # try:
