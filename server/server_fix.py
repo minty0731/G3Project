@@ -253,11 +253,11 @@ def update_restaurant_info(user_id, restaurant_id):
     """
     json_data = request.get_json()
     
-    print(json_data)
-    # profile_image_json = json_data.get('profileImageLink'),
-    # promo_images_json = json_data.get('promoImageCollection')
-    # restaurant_data = create_restaurant_data_from_json(user_id, json_data)
-    
+    profile_image_json = json_data.get('profileImageLink'),
+    promo_images_json = json_data.get('promoImageCollection')
+    restaurant_data = create_restaurant_data_from_json(user_id, json_data)
+    test_str = profile_image_json.split()[:10]
+    print(test_str)
     # if profile_image_json is not None:
     #     restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(profile_image_json, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_profile")
  
