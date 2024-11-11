@@ -13,6 +13,7 @@ from models.mongo_user import create_diner_data_from_json, create_owner_data_fro
 from misc.signup_data import create_signup_data_from_json
 from misc.const import ResponseKey, UserType
 from misc.token import generate_token, decode_token
+from misc.utils import dataclass_to_dict
 
 # MongoDB connection
 MY_URI = "mongodb+srv://dolongduy:vegan1234@test.ussqay0.mongodb.net/?retryWrites=true&w=majority&appName=Test"
@@ -150,7 +151,7 @@ def get_user(user_id):
     user = USER_REPO.get_user_data_from_id(user_id)
     if user:
         return api_response_data(ResponseKey.Message, 'Login successful', 
-                                 ResponseKey.KeyUser, asdict(user), 200)
+                                 ResponseKey.KeyUser, dataclass_to_dict(user, False), 200)
     else:
         return api_response_message(ResponseKey.Error, 'Invalid credentials', 401)
     
@@ -165,7 +166,7 @@ def get_authentication(user_id):
     auth = USER_REPO.get_user_auth_from_id(user_id)
     if auth:
         return api_response_data(ResponseKey.Message, 'Get authentication sucessfully', 
-                                 ResponseKey.KeyAuth, asdict(auth), 200)
+                                 ResponseKey.KeyAuth, dataclass_to_dict(auth, True), 200)
     else:
         return api_response_message(ResponseKey.Error, 'Invalid credentials', 401)
     
@@ -256,11 +257,17 @@ def update_restaurant_info(user_id, restaurant_id):
     profile_image_json = json_data.get('profileImageLink'),
     promo_images_json = json_data.get('promoImageCollection')
     restaurant_data = create_restaurant_data_from_json(user_id, json_data)
-    test_str = profile_image_json.split()[:10]
-    print(test_str)
-    # if profile_image_json is not None:
-    #     restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(profile_image_json, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_profile")
- 
+    
+    if profile_image_json is not None:
+        # for some reason, the base64 image from front end return as a tuple with the rest part is empty
+        actual_profile_image, *rest_profile = profile_image_json
+        restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(actual_profile_image, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_profile")
+    
+    if len(promo_images_json) > 0:
+        promo_images_link = []
+        for index, promo_image_json in enumerate(promo_images_json):
+            actual_promo_image, *rest_promo = promo_image_json
+            promo_images_link.append(CLOUDINARY_MANAGER.upload_and_get_db_link(actual_promo_image, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_promo_{index}"))
     
     restaurant_update = RESTAURANT_REPO.update_restaurant_db(restaurant_id, restaurant_data)
     if restaurant_update:
@@ -276,7 +283,7 @@ def get_restaurant_info(restaurant_id):
     try:
         restaurant_info = RESTAURANT_REPO.get_restaurant_info(restaurant_id)
         return api_response_data(ResponseKey.Message, 'Get restaurant info successfully', 
-                                 ResponseKey.RestaurantInfo, asdict(restaurant_info))
+                                 ResponseKey.RestaurantInfo, dataclass_to_dict(restaurant_info, True))
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
 

@@ -3,12 +3,12 @@ Use for mongo user
 """
 from dataclasses import dataclass, field
 from typing import List
-
+from misc.utils import to_camel_case
 
 @dataclass
 class UserData:
-    email: str
-    phone_number: str
+    email: str = ''
+    phone_number: str = ''
     full_name: str = ''
     profile_image_link: str = ''
 
@@ -23,13 +23,12 @@ class OwnerData(UserData):
     
 @dataclass
 class UserAuthentication:
-    username: str
-    password: str
-    authentication_type: str
-    authentication_identifier: str
-    user_id: str = None
-
-
+    username: str = ''
+    password: str = ''
+    authentication_type: str = ''
+    authentication_identifier: str = ''
+    user_id: str = ''
+    
 def create_diner_data_from_json(json_data: object) -> DinerData:
     diner_data = DinerData(
         email=json_data.get('email'),

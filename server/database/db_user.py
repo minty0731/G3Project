@@ -4,7 +4,7 @@ from models.mongo_user import DinerData, OwnerData, UserAuthentication
 from misc.const import CollectionName, UserType
 from misc.signup_data import SignUpData, create_user_data_and_auth_from_signup_data
 from bson.objectid import ObjectId
-
+from misc.utils import dataclass_to_dict
 
 def convert_doc_to_diner_data(doc):
     return DinerData(
@@ -60,7 +60,7 @@ class UserRepository:
         # Update diner data
         result_data = collection_diner_data.update_one(
             {"_id": ObjectId(diner_id)},
-            {"$set": asdict(diner_data)}
+            {"$set": dataclass_to_dict(diner_data)}
         )
 
         # Return true if at least one of the updates was successful
@@ -76,7 +76,7 @@ class UserRepository:
         # Update diner authentication
         result_auth = collection_diner_auth.update_one(
             {"user_id": diner_id},
-            {"$set": asdict(diner_auth)}
+            {"$set": dataclass_to_dict(diner_auth)}
         )
 
         # Return true if at least one of the updates was successful
@@ -125,7 +125,7 @@ class UserRepository:
         # Update owner data
         result_data = collection_owner_data.update_one(
             {"_id": ObjectId(owner_id)},
-            {"$set": asdict(owner_data)}
+            {"$set": dataclass_to_dict(owner_data)}
         )
 
         # Return true if at least one of the updates was successful
@@ -141,7 +141,7 @@ class UserRepository:
         # Update owner authentication
         result_auth = collection_owner_auth.update_one(
             {"user_id": owner_id},
-            {"$set": asdict(owner_auth)}
+            {"$set": dataclass_to_dict(owner_auth)}
         )
 
         # Return true if at least one of the updates was successful
@@ -196,7 +196,6 @@ class UserRepository:
                 return None
             user_data = convert_doc_to_owner_data(user_doc)
 
-        print(user_data)
         return user_data
     
     def get_user_auth_from_id(self, user_id: str) -> UserAuthentication:

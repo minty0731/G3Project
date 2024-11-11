@@ -3,7 +3,7 @@ Use for inserting with mongo restaurant
 """
 from dataclasses import dataclass, field
 from typing import List
-
+from misc.utils import to_camel_case
 
 @dataclass
 class MongoDeliveryLink:
@@ -14,6 +14,7 @@ class MongoDeliveryLink:
     link: str
 
 
+
 @dataclass
 class MongoAddress:
     """
@@ -22,7 +23,7 @@ class MongoAddress:
     address_text: str
     map_location: str
     branch_name: str
-
+    
 
 @dataclass
 class MongoRestaurant:
@@ -44,10 +45,10 @@ class MongoRestaurant:
     open_hours: dict = ''
     open_days: list[str] = ''
     
-    pure_vegan: bool = False
-    take_away: bool = False
-    dine_in: bool = False
-    buffet: bool = False
+    pure_vegan: bool = None
+    take_away: bool = None
+    dine_in: bool = None
+    buffet: bool = None
     
     lowest_price: int = 0
     highest_price: int = 0
@@ -89,7 +90,7 @@ class MongoFilteredRestaurant:
     dine_in: bool
     buffet: bool
     
-    food_country_types: list[str] = field(default_factory=list)
+    food_country_types: str
     delivery_types: list[str] = field(default_factory=list)
     price_over: int = 0
     price_under: int = 0
@@ -135,15 +136,15 @@ def create_category_data_from_json(shop_id: str, json_data: object) -> MongoCate
     return restaurant_data
 
 def create_food_data_from_json(shop_id: str, json_data: object) -> MongoFood:
-    restaurant_data = MongoRestaurant(
+    food_data = MongoFood(
         shop_id=shop_id,
         category_id=json_data.get('categoryId'),
         name=json_data.get('name'),
         description=json_data.get('description'),
         price=json_data.get('price'),
-        picture_link=json_data.get('imageLink')
+        image_link=json_data.get('imageLink')
     )
-    return restaurant_data
+    return food_data
 
 def create_filtered_restaurant_from_json(json_data: object) -> MongoFilteredRestaurant:
     filter = MongoFilteredRestaurant(

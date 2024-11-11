@@ -3,6 +3,7 @@ from database.db_manager import DatabaseManager
 from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood, MongoFilteredRestaurant
 from misc.const import CollectionName
 from bson.objectid import ObjectId
+from misc.utils import dataclass_to_dict
 
 
 class RestaurantRepository:
@@ -61,7 +62,7 @@ class RestaurantRepository:
 
         result = collection_restaurant_data.update_one(
             {"_id": ObjectId(restaurant_id)},
-            {"$set": asdict(mongo_restaurant)}
+            {"$set": dataclass_to_dict(mongo_restaurant)}
         )
         return result.modified_count > 0
 
@@ -73,7 +74,7 @@ class RestaurantRepository:
             CollectionName.RestaurantCategory)
 
         doc_category_data = collection_category_data.insert_one(
-            asdict(mongo_category))
+            dataclass_to_dict(mongo_category))
         category_id = str(doc_category_data.inserted_id)
 
         return category_id
@@ -87,7 +88,7 @@ class RestaurantRepository:
 
         result = collection_category_data.update_one(
             {"_id": ObjectId(category_id)},
-            {"$set": asdict(mongo_category)}
+            {"$set": dataclass_to_dict(mongo_category)}
         )
         return result.modified_count > 0
 
@@ -108,7 +109,7 @@ class RestaurantRepository:
         )
 
         doc_food_data = collection_food_data.insert_one(
-            asdict(mongo_food))
+            dataclass_to_dict(mongo_food))
         food_id = str(doc_food_data.inserted_id)
 
         return food_id
@@ -122,7 +123,7 @@ class RestaurantRepository:
 
         result = collection_food_data.update_one(
             {"_id": ObjectId(food_id)},
-            {"$set": asdict(mongo_food)}
+            {"$set": dataclass_to_dict(mongo_food)}
         )
         return result.modified_count > 0
 
