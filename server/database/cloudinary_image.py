@@ -5,6 +5,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import io
+import base64
 
 class CloudinaryManager:
     _instance = None
@@ -26,9 +27,15 @@ class CloudinaryManager:
         response = cloudinary.uploader.upload(image_path, folder = folder, public_id = public_id)
         return response
 
-    def upload_image_from_data(self, image_data: object, folder:str = '', public_id: str = None):
-        """Uploads an image from binary data directly to Cloudinary."""
-        # If image_data is a bytes object, convert it to a file-like object
+    def upload_image_from_base64(self, image_base64: object, folder:str = '', public_id: str = None):
+        """Uploads an image from base64, convert to binary before upload to directly to Cloudinary."""
+
+        # Remove metadata if present (e.g., data:image/jpeg;base64,)
+        if ',' in image_base64:
+            image_base64 = image_base64.split(',')[1]
+
+        image_data = base64.b64decode(image_base64)
+        
         if isinstance(image_data, bytes):
             image_file = io.BytesIO(image_data)
         else:
@@ -50,7 +57,7 @@ class CloudinaryManager:
         return link
     
     def upload_and_get_db_link(self, image_data: object, folder:str = '', public_id: str = None):
-        response = self.upload_image_from_data(image_data, folder, public_id)
+        response = self.upload_image_from_base64(image_data, folder, public_id)
         if response is not None:
             version = response["version"]
             public_id = response["public_id"]
