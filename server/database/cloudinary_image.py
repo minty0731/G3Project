@@ -6,6 +6,7 @@ import cloudinary.uploader
 import cloudinary.api
 import io
 import base64
+from typing import List
 
 class CloudinaryManager:
     _instance = None
@@ -27,14 +28,25 @@ class CloudinaryManager:
         response = cloudinary.uploader.upload(image_path, folder = folder, public_id = public_id)
         return response
 
-    def upload_image_from_base64(self, image_base64: object, folder:str = '', public_id: str = None):
+    def upload_image_from_base64(self, base64_str: str, folder:str = '', public_id: str = None):
         """Uploads an image from base64, convert to binary before upload to directly to Cloudinary."""
 
-        # Remove metadata if present (e.g., data:image/jpeg;base64,)
-        if ',' in image_base64:
-            image_base64 = image_base64.split(',')[1]
+        # Check if the input is a string
+        if not isinstance(base64_string, str):
+            raise TypeError("Expected a string for the Base64 input.")
 
-        image_data = base64.b64decode(image_base64)
+        # Remove metadata if present (e.g., data:image/jpeg;base64,)
+        if ',' in base64_string:
+            base64_string = base64_string.split(',', 1)[1]  # Split only once
+
+        # Debug: Print the length of the Base64 string
+        print(f"Base64 string length: {len(base64_string)}")
+
+        # Decode the Base64 string
+        try:
+            image_data = base64.b64decode(base64_string)
+        except Exception as e:
+            raise ValueError(f"Failed to decode Base64 string: {e}")
         
         if isinstance(image_data, bytes):
             image_file = io.BytesIO(image_data)
