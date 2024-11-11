@@ -7,6 +7,7 @@ from database.db_restaurant import RestaurantRepository
 from misc.const import CollectionName, UserType
 from database.db_manager import DatabaseManager
 from database.db_user import UserRepository
+from database.cloudinary_image import CloudinaryManager
 import random
 
 actual_id ='67162174f9b8ff18eda6aaaf'
@@ -16,6 +17,13 @@ DB_NAME = "vegan"
 DB_MANAGER = DatabaseManager(MY_URI, DB_NAME)
 RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
 USER_REPO = UserRepository(DB_MANAGER)
+
+# Cloudinary manager
+CLOUDINARY_NAME = 'dzxlzh6hh'
+CLOUDINARY_KEY = '451518431196965'
+CLOUDINARY_SECRET = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
+CLOUDINARY_USER_FOLDER = 'Users'
+CLOUDINARY_MANAGER = CloudinaryManager(CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET)
 
 def test_create_restaurant(restaurant):
     return RESTAURANT_REPO.create_restaurant_db(restaurant)
@@ -93,4 +101,12 @@ def display_grouped_foods(restaurant_id: str):
 user_id = '671614d2bc0f745bb6a56323'
 owner_id = '671a4afd23928f9f3fc963e4'
 res_id = '672b5f5ee12ea6f036439eee'
-print(RESTAURANT_REPO.get_restaurant_foods_grouped_by_category(res_id))
+
+user_test = '671614d2bc0f745bb6a56323_profile'
+test = CLOUDINARY_MANAGER.upload_image('test img.jpg', CLOUDINARY_USER_FOLDER, user_test)
+get_url = test["url"]
+version = test["version"]
+public_id = test["public_id"]
+format = test["format"]
+print(f"v{version}/{public_id}.{format}")
+print(get_url)

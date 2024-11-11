@@ -7,6 +7,7 @@ from dataclasses import asdict
 from database.db_manager import DatabaseManager, serialize_document
 from database.db_user import UserRepository
 from database.db_restaurant import RestaurantRepository
+from database.cloudinary_image import CloudinaryManager
 from models.mongo_restaurant import create_restaurant_data_from_json, create_category_data_from_json, create_food_data_from_json, create_filtered_restaurant_from_json
 from models.mongo_user import create_diner_data_from_json, create_owner_data_from_json, create_user_auth_from_json
 from misc.signup_data import create_signup_data_from_json
@@ -18,13 +19,19 @@ MY_URI = "mongodb+srv://dolongduy:vegan1234@test.ussqay0.mongodb.net/?retryWrite
 DB_NAME = "vegan"
 DB_MANAGER = DatabaseManager(MY_URI, DB_NAME)
 
+# Cloudinary manager
+CLOUDINARY_NAME = 'dzxlzh6hh'
+CLOUDINARY_KEY = '451518431196965'
+CLOUDINARY_SECRET = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
+CLOUDINARY_USER_FOLDER = 'Users'
+CLOUDINARY_MANAGER = CloudinaryManager(CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET)
+
 # app instance
 app = Flask(__name__)
 CORS(app)
 
 # improtant constance
 TEST_KEY = 'vegan-review-test-key'
-CLOUDINARY_KEY = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
 USER_REPO = UserRepository(DB_MANAGER)
 RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
 
@@ -245,7 +252,22 @@ def update_restaurant_info(user_id, restaurant_id):
     A protected API endpoint that allow user to update restaurant info
     """
     json_data = request.get_json()
+    
+    profile_image_json = json_data.get('profileImageLink'),
+    promo_images_json = json_data.get('promoImageCollection')
     restaurant_data = create_restaurant_data_from_json(user_id, json_data)
+    
+    if profile_image_json is not None:
+        restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(profile_image_json, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_profile")
+            
+    if len(promo_images_json) > 0:
+        promo_image_links = []
+        for index, image in enumerate(promo_images_json):
+            promo_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(image, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_promo_{index + 1}")
+            promo_image_links.append(promo_image_link)
+        
+        restaurant_data.promo_image_collection = promo_image_links
+    
     restaurant_update = RESTAURANT_REPO.update_restaurant_db(restaurant_id, restaurant_data)
     if restaurant_update:
         return api_response_message(ResponseKey.Message, 'Update restaurant sucessfully', 201)

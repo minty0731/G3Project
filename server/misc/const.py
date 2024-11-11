@@ -1,3 +1,5 @@
+from enum import Enum
+
 class CollectionName:
     DinerData = 'diner_data'
     DinerAuthentication = 'diner_auth'
@@ -36,3 +38,8 @@ class AuthenticationType:
 class UserType:
     Diner = 'diner'
     Owner = 'owner'
+
+
+user_auth_conversion = {
+    
+}
