@@ -11,8 +11,7 @@ const CustomStorePage = () => {
     const [collectionImages, setCollectionImages] = useState<string[]>(new Array(4).fill(null));
     const [categoryDesc, setCategoryDesc] = useState<string>()
     const [branches, setBranches] = useState<number>(1);
-    const [addresses, setAddresses] = useState<AddressData[]>(Array(branches).fill(""));
-    const [hours, setHours] = useState<string>("");
+    const [addresses, setAddresses] = useState([{ address_text: "", map_location: "", branch_name: "" }]); const [hours, setHours] = useState<string>("");
     const [openDays, setOpenDays] = useState<string>("");
     const [highPrice, setHighPrice] = useState<number>(0);
     const [lowPrice, setLowPrice] = useState<number>(0);
@@ -113,8 +112,8 @@ const CustomStorePage = () => {
             buffet: buffet,
             deliveryCollection: deliveryLinks,
             paymentMethod: paymentMethods,
-            profileImage,
-            collectionImages
+            profileImageLink: profileImage,
+            promoImageCollection: collectionImages,
 
         };
         console.log(data)
@@ -132,6 +131,7 @@ const CustomStorePage = () => {
             if (response.ok) {
                 const data = await response.json();
                 console.log(data.message)
+                alert(data.message)
             } else {
                 console.error('Error fetching data');
             }
@@ -142,6 +142,7 @@ const CustomStorePage = () => {
         <div>
             <div className="h-full w-full bg-white shadow-lg rounded-2xl p-6">
                 <div className="grid grid-cols-1 gap-6 pb-20" key={reload ? 'reload-true' : 'reload-false'}>
+                    <h1 className="text-2xl font-semibold">Thông tin cửa hàng</h1>
                     {/* Store Name */}
                     <div>
                         <label className="font-semibold">Tên cửa hàng:</label>
@@ -346,20 +347,23 @@ const CustomStorePage = () => {
                         <button onClick={addLink} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Thêm Link</button>
                     </div>
                 </div>
-                {/* Fixed Bottom Navbar */}
             </div>
             <div className="h-full w-full bg-white shadow-lg rounded-2xl p-6 mt-6" key={reload ? 'reload-true' : 'reload-false'}>
+                <h1 className="text-2xl font-semibold pt-4 pb-12">Giới thiệu cửa hàng</h1>
+                {/*Upload image */}
                 <ImageUpload
                     profileImage={profileImage}
                     setProfileImage={setProfileImage}
                     collectionImages={collectionImages}
                     setCollectionImages={setCollectionImages}
                 />
+                {/*Store description */}
                 <div className="flex mt-10">
                     <h1 className="w-60 font-medium">*Giới thiệu về cửa hàng</h1>
-                    <textarea rows={10} className="w-full p-2 border-2 rounded" placeholder="Nhập tên cửa hàng" onChange={(e) => setCategoryDesc(e.target.value)} />
+                    <textarea rows={10} className="w-full p-2 border-2 rounded" placeholder="Giới thiệu đôi chút về cửa hàng" onChange={(e) => setCategoryDesc(e.target.value)} />
                 </div>
             </div>
+            {/* Fixed Bottom Navbar */}
             <div className="fixed bottom-0 left-2 w-full bg-gray-100 border-t p-4 px-16 flex justify-end space-x-4">
                 <button onClick={resetData} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Hủy</button>
                 <button onClick={handleSubmitStore} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Lưu</button>
