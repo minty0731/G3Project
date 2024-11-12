@@ -102,11 +102,4 @@ user_id = '671614d2bc0f745bb6a56323'
 owner_id = '671a4afd23928f9f3fc963e4'
 res_id = '672b5f5ee12ea6f036439eee'
 
-user_test = '671614d2bc0f745bb6a56323_profile'
-test = CLOUDINARY_MANAGER.upload_image('test img.jpg', CLOUDINARY_USER_FOLDER, user_test)
-get_url = test["url"]
-version = test["version"]
-public_id = test["public_id"]
-format = test["format"]
-print(f"v{version}/{public_id}.{format}")
-print(get_url)
+
