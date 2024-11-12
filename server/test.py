@@ -45,7 +45,7 @@ def create_categories_and_foods(shop_id: str):
         mongo_category = MongoCategory(
             shop_id=shop_id,
             name=category_name,
-            total_food_amount=0  # Initial count
+            total_food_amount = 0  # Initial count
         )
         category_id = RESTAURANT_REPO.create_category_db(mongo_category)
         categories.append(category_id)
@@ -101,5 +101,6 @@ def display_grouped_foods(restaurant_id: str):
 user_id = '671614d2bc0f745bb6a56323'
 owner_id = '671a4afd23928f9f3fc963e4'
 res_id = '672b5f5ee12ea6f036439eee'
+res_id2 = '672d55fa8c65473ddc82a892'
 
-
+create_categories_and_foods(res_id2)

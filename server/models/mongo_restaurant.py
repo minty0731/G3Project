@@ -10,8 +10,8 @@ class MongoDeliveryLink:
     """
     Use for delivery
     """
-    company: str
-    link: str
+    company: str = ''
+    link: str = ''
 
 
 
@@ -20,9 +20,9 @@ class MongoAddress:
     """
     Use for delivery
     """
-    address_text: str
-    map_location: str
-    branch_name: str
+    address_text: str = ''
+    map_location: str = ''
+    branch_name: str = ''
     
 
 @dataclass
@@ -63,8 +63,8 @@ class MongoCategory:
     """
     Use for inserting into MongoDB
     """
-    shop_id: str
-    name: str
+    shop_id: str = ''
+    name: str = ''
     total_food_amount: int = 0
 
 @dataclass
@@ -72,12 +72,12 @@ class MongoFood:
     """
     Use for inserting into MongoDB
     """
-    shop_id: str
-    category_id: str
-    name: str
-    description: str
-    price: float
-    image_link: str
+    shop_id: str = ''
+    category_id: str = ''
+    name: str = ''
+    description: str = ''
+    price: float = ''
+    image_link: str = ''
 
 
 @dataclass
@@ -102,10 +102,7 @@ def create_restaurant_data_from_json(owner_id: str, json_data: object) -> MongoR
         owner_id=owner_id,
         name=json_data.get('name'),
         category_description=json_data.get('categoryDescription'),
-        
-        profile_image_link=json_data.get('profileImageLink'),
-        promo_image_collection=json_data.get('promoImageCollection'),
-        
+                
         food_country_type=json_data.get('foodCountryType'),
         food_country_image_link=json_data.get('foodCountryImageLink'),
         
@@ -141,8 +138,7 @@ def create_food_data_from_json(shop_id: str, json_data: object) -> MongoFood:
         category_id=json_data.get('categoryId'),
         name=json_data.get('name'),
         description=json_data.get('description'),
-        price=json_data.get('price'),
-        image_link=json_data.get('imageLink')
+        price=json_data.get('price')
     )
     return food_data
 

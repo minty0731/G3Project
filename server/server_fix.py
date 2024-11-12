@@ -24,7 +24,9 @@ DB_MANAGER = DatabaseManager(MY_URI, DB_NAME)
 CLOUDINARY_NAME = 'dzxlzh6hh'
 CLOUDINARY_KEY = '451518431196965'
 CLOUDINARY_SECRET = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
-CLOUDINARY_USER_FOLDER = 'Users'
+CLOUDINARY_FOLDER_USERS = 'Users'
+CLOUDINARY_FOLDER_RESTAURANTS = 'Restaurants'
+CLOUDINARY_FOLDER_FOODS = 'Foods'
 CLOUDINARY_MANAGER = CloudinaryManager(CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET)
 
 # app instance
@@ -143,7 +145,7 @@ def login():
 
 @app.route('/api/user/get_user', methods=['GET'])
 @require_jwt_token
-def get_user(user_id):
+def get_user_data(user_id):
     """
     A protected API endpoint that requires a valid JWT token.
     """
@@ -158,7 +160,7 @@ def get_user(user_id):
 # Return user info after fetching their id
 @app.route('/api/user/get_auth', methods=['GET'])
 @require_jwt_token
-def get_authentication(user_id):
+def get_user_auth(user_id):
     """
     Get authentication, should only be use when changing it
     """
@@ -177,20 +179,19 @@ def update_user_data(user_id):
     """
     Update user data (e.g., name, email).
     """
-    data = request.get_json()
-    user_type = data.get('userType')  # Get user type from the request
+    json_data = request.get_json()
+    user_type = json_data.get('userType')  # Get user type from the request
 
     if user_type not in [UserType.Diner, UserType.Owner]:
         return api_response_message(ResponseKey.Error, 'Invalid user types', 401)
-
+    
     # Create data objects based on your model (adjust as necessary)
-    if user_type == UserType.Diner:
-        diner_data = create_diner_data_from_json(data)
-        success = USER_REPO.update_diner_data(user_id, diner_data)  # Update diner data
-    else:  # owner
-        owner_data = create_owner_data_from_json(data)  # Assuming OwnerData is a valid model
-        success = USER_REPO.update_owner_data(user_id, owner_data)  # Update owner data
-
+    user_data = create_diner_data_from_json(json_data) if user_type == UserType.Diner else create_owner_data_from_json(json_data)
+    profile_image_json = json_data.get('profileImageLink')
+    if profile_image_json is not None:
+        user_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(profile_image_json, CLOUDINARY_FOLDER_USERS, f"{user_id}_profile")
+    
+    success = USER_REPO.update_diner_data(user_id, user_data) if user_type == UserType.Diner else USER_REPO.update_owner_data(user_id, user_data)
     if success:
         return api_response_message(ResponseKey.Message, 'User data updated successfully', 200)
     else:
@@ -254,20 +255,17 @@ def update_restaurant_info(user_id, restaurant_id):
     """
     json_data = request.get_json()
     
-    profile_image_json = json_data.get('profileImageLink'),
+    profile_image_json = json_data.get('profileImageLink')
     promo_images_json = json_data.get('promoImageCollection')
     restaurant_data = create_restaurant_data_from_json(user_id, json_data)
     if profile_image_json is not None:
-        # for some reason, the base64 image send alone is a tuple with the rest part is empty
-        actual_profile_image, *rest_profile = profile_image_json
-        if actual_profile_image is not None:
-            restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(actual_profile_image, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_profile")
+        restaurant_data.profile_image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(profile_image_json, CLOUDINARY_FOLDER_RESTAURANTS, f"{restaurant_id}_profile")
     
-    if len(promo_images_json) > 0:
+    if promo_images_json is not None and len(promo_images_json) > 0:
         promo_images_link = []
         for index, promo_image_json in enumerate(promo_images_json):
-            # for some reason, the base64 image send inside the list is a string
-            promo_images_link.append(CLOUDINARY_MANAGER.upload_and_get_db_link(promo_image_json, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_promo_{index}"))
+            if promo_image_json is not None:
+                promo_images_link.append(CLOUDINARY_MANAGER.upload_and_get_db_link(promo_image_json, CLOUDINARY_FOLDER_RESTAURANTS, f"{restaurant_id}_promo_{index}"))
 
         restaurant_data.promo_image_collection = promo_images_link
         
@@ -277,19 +275,7 @@ def update_restaurant_info(user_id, restaurant_id):
     else:
         return api_response_message(ResponseKey.Error, 'Update Failed', 401)
 
-@app.route('/api/restaurant/<string:restaurant_id>/info', methods=['GET'])
-def get_restaurant_info(restaurant_id):
-    """
-    Get restaurant info, except for food
-    """
-    try:
-        restaurant_info = RESTAURANT_REPO.get_restaurant_info(restaurant_id)
-        return api_response_data(ResponseKey.Message, 'Get restaurant info successfully', 
-                                 ResponseKey.RestaurantInfo, dataclass_to_dict(restaurant_info, True))
-    except ValueError:
-        return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
-
-@app.route('/api/restaurant/<string:restaurant_id>/category', methods=['POST'])
+@app.route('/api/restaurant/<string:restaurant_id>/categories', methods=['POST'])
 @require_jwt_token
 @require_user_is_owner
 def create_restaurant_category(user_id, restaurant_id):
@@ -304,7 +290,7 @@ def create_restaurant_category(user_id, restaurant_id):
     else:
         return api_response_message(ResponseKey.Error, 'Update Failed', 401)
 
-@app.route('/api/restaurant/<string:restaurant_id>/category/<string:category_id>', methods=['PATCH'])
+@app.route('/api/restaurant/<string:restaurant_id>/categories/<string:category_id>', methods=['PATCH'])
 @require_jwt_token
 @require_user_is_owner
 def update_restaurant_category(user_id, restaurant_id, category_id):
@@ -327,9 +313,15 @@ def create_restaurant_food(user_id, restaurant_id):
     Allow user to create food info
     """
     json_data = request.get_json()
+    image_json = json_data.get('imageLink')
     food_data = create_food_data_from_json(restaurant_id, json_data)
     food_id = RESTAURANT_REPO.create_food_db(food_data)
+    
     if food_id:
+        if image_json is not None:
+            image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(image_json, CLOUDINARY_FOLDER_FOODS, f"{food_id}_food_image")
+            RESTAURANT_REPO.update_food_image(food_id, image_link)
+        
         return api_response_message(ResponseKey.Message, 'Create restaurant food sucessfully', 201)
     else:
         return api_response_message(ResponseKey.Error, 'Update Failed', 401)
@@ -342,22 +334,51 @@ def update_restaurant_food(user_id, restaurant_id, food_id):
     Allow user to update food
     """
     json_data = request.get_json()
-    food_data = create_category_data_from_json(restaurant_id, json_data)
+    image_json = json_data.get('imageLink')
+    food_data = create_food_data_from_json(restaurant_id, json_data)
+    
+    if image_json is not None:
+        food_data.image_link = CLOUDINARY_MANAGER.upload_and_get_db_link(image_json, CLOUDINARY_FOLDER_FOODS, f"{food_id}_food_image")
+            
     food_update = RESTAURANT_REPO.update_food_db(food_id, food_data)
     if food_update:
         return api_response_message(ResponseKey.Message, 'Update restaurant food sucessfully', 201)
     else:
         return api_response_message(ResponseKey.Error, 'Update Failed', 401)
-       
+
+@app.route('/api/restaurant/<string:restaurant_id>/info', methods=['GET'])
+def get_restaurant_info(restaurant_id):
+    """
+    Get restaurant info
+    """
+    try:
+        restaurant_info = RESTAURANT_REPO.get_restaurant_info(restaurant_id)
+        return api_response_data(ResponseKey.Message, 'Get restaurant info successfully', 
+                                 ResponseKey.RestaurantInfo, dataclass_to_dict(restaurant_info, True))
+    except ValueError:
+        return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
+          
+@app.route('/api/restaurant/<string:restaurant_id>/categories', methods=['GET'])
+def get_restaurant_categories(restaurant_id):
+    """
+    Only get restaurant categories
+    """
+    try:
+        restaurant_categories = RESTAURANT_REPO.get_restaurant_categories(restaurant_id)
+        return api_response_data(ResponseKey.Message, 'Get restaurant categories successfully', 
+                                 ResponseKey.RestaurantCategories, restaurant_categories)
+    except ValueError:
+        return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
+
 @app.route('/api/restaurant/<string:restaurant_id>/foods', methods=['GET'])
 def get_restaurant_foods(restaurant_id):
     """
-    Only get restaurant food, return category that is list with foods
+    Only get restaurant foods
     """
     try:
-        restaurant_food_list = RESTAURANT_REPO.get_restaurant_foods_grouped_by_category(restaurant_id)
+        restaurant_foods = RESTAURANT_REPO.get_restaurant_foods(restaurant_id)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods successfully', 
-                                 ResponseKey.RestaurantFoods, restaurant_food_list)
+                                 ResponseKey.RestaurantFoods, restaurant_foods)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Restaurant not found', 404)
 
@@ -369,7 +390,7 @@ def get_all_restaurant_info_count():
     try:
         count = RESTAURANT_REPO.get_home_restaurant_amount()
         return api_response_data(ResponseKey.Message, 'Get restaurant total amount successfully', 
-                                 ResponseKey.RestaurantCountInfo, count)
+                                 ResponseKey.TotalRestaurantCountInfo, count)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
@@ -381,7 +402,7 @@ def get_all_restaurants_food_count():
     try:
         count = RESTAURANT_REPO.get_home_food_amount()
         return api_response_data(ResponseKey.Message, 'Get restaurant total amount successfully', 
-                                 ResponseKey.RestaurantCountFoods, count)
+                                 ResponseKey.TotalRestaurantCountFoods, count)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
@@ -396,7 +417,7 @@ def get_all_restaurant_info_list():
         item_per_page = json_data.get('itemPerPage')
         list_info = RESTAURANT_REPO.get_home_restaurant_list(page_number, item_per_page)
         return api_response_data(ResponseKey.Message, 'Get restaurant info list successfully', 
-                                 ResponseKey.RestaurantListInfo, dict(list_info))
+                                 ResponseKey.TotalRestaurantListInfo, list_info)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
@@ -410,8 +431,9 @@ def get_all_restaurants_food_list():
         page_number = json_data.get('pageNumber')
         item_per_page = json_data.get('itemPerPage')
         list_foods= RESTAURANT_REPO.get_home_food_list(page_number, item_per_page)
+        print (list_foods)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods list successfully', 
-                                 ResponseKey.RestaurantListFoods, dict(list_foods))
+                                 ResponseKey.TotalRestaurantListFoods, list_foods)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 
@@ -426,7 +448,7 @@ def get_filtered_restaurant_info_info():
         filter_data = create_filtered_restaurant_from_json(json_data)
         list_info = RESTAURANT_REPO.get_filtered_restaurant_list(filter_data)
         return api_response_data(ResponseKey.Message, 'Get all filtered restaurant info list successfully', 
-                                 ResponseKey.RestaurantFilteredFoods, dict(list_info))
+                                 ResponseKey.FilteredRestaurantInfoOption, list_info)
     except ValueError:
         return api_response_message(ResponseKey.Error, 'Error', 400)    
 

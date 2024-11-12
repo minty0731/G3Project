@@ -34,7 +34,6 @@ def create_diner_data_from_json(json_data: object) -> DinerData:
         email=json_data.get('email'),
         phone_number=json_data.get('phoneNumber'),
         full_name=json_data.get('fullName'),
-        profile_image_link=json_data.get('profileImageLink'),
         address=json_data.get('address'),
         favorite_restaurants=json_data.get('favoriteRestaurants')
     )
@@ -45,7 +44,6 @@ def create_owner_data_from_json(json_data: object) -> OwnerData:
         email=json_data.get('email'),
         phone_number=json_data.get('phoneNumber'),
         full_name=json_data.get('fullName'),
-        profile_image_link=json_data.get('profileImageLink'),
         restaurant_id=json_data.get('restaurantId')
     )
     return owner_data

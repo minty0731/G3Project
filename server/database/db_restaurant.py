@@ -3,7 +3,7 @@ from database.db_manager import DatabaseManager
 from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood, MongoFilteredRestaurant
 from misc.const import CollectionName
 from bson.objectid import ObjectId
-from misc.utils import dataclass_to_dict
+from misc.utils import dataclass_to_dict, convert_value
 
 
 class RestaurantRepository:
@@ -74,7 +74,7 @@ class RestaurantRepository:
             CollectionName.RestaurantCategory)
 
         doc_category_data = collection_category_data.insert_one(
-            dataclass_to_dict(mongo_category))
+            asdict(mongo_category))
         category_id = str(doc_category_data.inserted_id)
 
         return category_id
@@ -109,7 +109,7 @@ class RestaurantRepository:
         )
 
         doc_food_data = collection_food_data.insert_one(
-            dataclass_to_dict(mongo_food))
+            asdict(mongo_food))
         food_id = str(doc_food_data.inserted_id)
 
         return food_id
@@ -127,6 +127,19 @@ class RestaurantRepository:
         )
         return result.modified_count > 0
 
+    def update_food_image(self, food_id: str, image_link: str) -> bool:
+        """
+        Update the food image.
+        """
+        collection_food_data = self.db_manager.get_collection(
+            CollectionName.RestaurantFood)
+
+        result = collection_food_data.update_one(
+            {"_id": ObjectId(food_id)},
+            {"$set": {"image_link": image_link}}
+        )
+        return result.modified_count > 0
+    
     def get_home_restaurant_amount(self) -> int:
         """
         Retrieve restaurant amount for pagination in home page
@@ -162,9 +175,16 @@ class RestaurantRepository:
         skip_count = (page - 1) * page_size
 
         # Retrieve paginated results
-        restaurants = list(collection_restaurant_data.find().skip(
+        restaurant_docs = list(collection_restaurant_data.find().skip(
             skip_count).limit(page_size))
-
+        
+        restaurants = []
+        for restaurant_doc in restaurant_docs:
+            id = restaurant_doc.pop('_id')
+            restaurant = convert_value(restaurant_doc, True)
+            restaurant['restaurantId'] = str(id)
+            restaurants.append(restaurant)
+            
         return restaurants
 
     def get_home_food_list(self, page: int = 1, page_size: int = 10) -> list[dict]:
@@ -178,48 +198,57 @@ class RestaurantRepository:
         skip_count = (page - 1) * page_size
 
         # Retrieve paginated results
-        foods = list(collection_food_data.find().skip(
+        food_docs = list(collection_food_data.find().skip(
             skip_count).limit(page_size))
-
+        
+        foods = []
+        for food_doc in food_docs:
+            id = food_doc.pop('_id')
+            food = convert_value(food_doc, True)
+            food['foodId'] = str(id)
+            foods.append(food)
+            
         return foods     
         
-    def get_restaurant_foods_grouped_by_category(self, restaurant_id: str) -> list[dict]:
+    def get_restaurant_foods(self, restaurant_id: str) -> list[dict]:
         """
         Retrieve all foods for a specific restaurant, grouped by their categories.
         """
         collection_food_data = self.db_manager.get_collection(
             CollectionName.RestaurantFood)
-        collection_category_data = self.db_manager.get_collection(
-            CollectionName.RestaurantCategory)
 
         # Retrieve foods for the specified restaurant
-        foods = list(collection_food_data.find({"shop_id": restaurant_id}))
+        food_docs = list(collection_food_data.find({"shop_id": restaurant_id}))
         
-        for food in foods:
-            del food['_id']
+        foods = []
+        for food_doc in food_docs:
+            id = food_doc.pop('_id')
+            food = convert_value(food_doc, True)
+            food['foodId'] = str(id)
+            foods.append(food)
             
-        # Retrieve categories for these IDs
-        categories = list(collection_category_data.find(
+        return foods
+    
+    def get_restaurant_categories(self, restaurant_id: str) -> list[dict]:
+        """
+        Retrieve all categories for a specific restaurant
+        """
+        collection_category_data = self.db_manager.get_collection(
+            CollectionName.RestaurantCategory)
+            
+        # Retrieve categories for the specified restaurant
+        category_docs = list(collection_category_data.find(
             {"shop_id": restaurant_id}))
-
-        # Create a dictionary for categories for easy insert
-        grouped_food = {str(category['_id'])
-                             : category for category in categories}
-        # add in the foods list key for inner dict
-        for inner_key, category in grouped_food.items():
-            if isinstance(category, dict):  # Ensure it's a dictionary
-                category["food_list"] = []  # Add the new key-value pair
             
-        for food in foods:
-            category_id = food['category_id']
-            grouped_food[category_id]["food_list"].append(food)
+        categories = []
+        for category_doc in category_docs:
+            id = category_doc.pop('_id')
+            category = convert_value(category_doc, True)
+            category['categoryId'] = str(id)
+            categories.append(category)
             
-        
-        result = list(grouped_food.values())
-        for category in result:
-            del category['_id']
-            
-        return result
+        return categories
+    
     def create_query_for_filtered_restaurants(self, filter: MongoFilteredRestaurant) -> dict[str, object]:
         query = {}
         # Filter by boolean attributes using OR
@@ -261,7 +290,7 @@ class RestaurantRepository:
     
     def get_filtered_restaurant_list(self, filter: MongoFilteredRestaurant) -> list[dict]:
         """
-        Retrieve the list of restaurants that is filtered, in pagination
+        Retrieve the list of restaurants that is filtered
         """
         collection_restaurant_data = self.db_manager.get_collection(
             CollectionName.RestaurantData)
@@ -269,6 +298,13 @@ class RestaurantRepository:
         query = self.create_query_for_filtered_restaurants(filter)
         
         # Retrieve paginated results
-        filtered_restaurants = list(collection_restaurant_data.find(query))
+        filtered_restaurant_docs = list(collection_restaurant_data.find(query))
         
+        filtered_restaurants = []
+        for filtered_restaurant_doc in filtered_restaurant_docs:
+            id = filtered_restaurant_doc.pop('_id')
+            filtered_restaurant = convert_value(filtered_restaurant_doc, True)
+            filtered_restaurant['restaurantId'] = str(id)
+            filtered_restaurants.append(filtered_restaurant)
+            
         return filtered_restaurants
