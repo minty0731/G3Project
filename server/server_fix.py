@@ -268,7 +268,9 @@ def update_restaurant_info(user_id, restaurant_id):
         for index, promo_image_json in enumerate(promo_images_json):
             actual_promo_image, *rest_promo = promo_image_json
             promo_images_link.append(CLOUDINARY_MANAGER.upload_and_get_db_link(actual_promo_image, CLOUDINARY_USER_FOLDER, f"{restaurant_id}_promo_{index}"))
-    
+
+        restaurant_data.promo_image_collection = promo_images_link
+        
     restaurant_update = RESTAURANT_REPO.update_restaurant_db(restaurant_id, restaurant_data)
     if restaurant_update:
         return api_response_message(ResponseKey.Message, 'Update restaurant sucessfully', 201)
