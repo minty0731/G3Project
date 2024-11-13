@@ -4,17 +4,19 @@ import { DeliveryLink, deliveryCompanies } from '@/constant/DeliveryLink';
 import { getRestaurantID } from '@/constant/RestaurantID';
 import { ImageUpload } from '@/components/ImageUpload';
 import { AddressData } from '@/constant/AddressData';
+import { Flags } from '@/constant/CountryFlag';
 import Cookies from 'js-cookie';
 const CustomStorePage = () => {
     const [storeName, setStoreName] = useState<string>("");
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [collectionImages, setCollectionImages] = useState<string[]>(new Array(4).fill(null));
+    const [countryFlag, setCountryFlag] = useState<string>("");
     const [categoryDesc, setCategoryDesc] = useState<string>()
     const [branches, setBranches] = useState<number>(1);
     const [addresses, setAddresses] = useState([{ address_text: "", map_location: "", branch_name: "" }]); const [hours, setHours] = useState<string>("");
     const [openDays, setOpenDays] = useState<string>("");
-    const [highPrice, setHighPrice] = useState<number>(0);
-    const [lowPrice, setLowPrice] = useState<number>(0);
+    const [highPrice, setHighPrice] = useState<string>("");
+    const [lowPrice, setLowPrice] = useState<string>("");
     const [phoneNumber, setPhoneNumber] = useState<string>("");
     const [cuisineType, setCuisineType] = useState<string>("");
     const [isVegan, setIsVegan] = useState<boolean>(false);
@@ -64,11 +66,20 @@ const CustomStorePage = () => {
                 : [...prevMethods, method]
         );
     };
+    const handleCountryChange = (newCountry: string) => {
+        setCuisineType(newCountry);
+        const flagLink = (newCountry: string) => {
+            const flag = Flags.find(flag => flag.alt === newCountry);
+            return flag?.link || "";
+        }
+        setCountryFlag(flagLink);
+    };
 
     const resetData = () => {
         setReload(!reload);
         setStoreName("")
         setPhoneNumber("")
+        setCountryFlag("")
         setAddresses([])
         setBranches(1)
         setBuffet(false)
@@ -81,8 +92,8 @@ const CustomStorePage = () => {
         setDeliveryLinks([{ company: "", link: "" }])
         setHours("")
         setOpenDays("")
-        setLowPrice(0)
-        setHighPrice(0)
+        setLowPrice("")
+        setHighPrice("")
         setPaymentMethods([])
         setProfileImage(null);
         setCollectionImages(new Array(4).fill(null));
@@ -114,9 +125,10 @@ const CustomStorePage = () => {
             paymentMethod: paymentMethods,
             profileImageLink: profileImage,
             promoImageCollection: collectionImages,
-
+            foodCountryImageLink: countryFlag
         };
         console.log(data)
+
         const token = Cookies.get('token')
         if (token) {
             const resID = await getRestaurantID(token)
@@ -257,13 +269,13 @@ const CustomStorePage = () => {
                                 type="number"
                                 className="w-full p-2 border rounded"
                                 placeholder="Giá thấp nhất"
-                                onChange={(e) => setLowPrice(parseFloat(e.target.value))}
+                                onChange={(e) => setLowPrice(e.target.value)}
                             />
                             <input
                                 type="number"
                                 className="w-full p-2 border rounded"
                                 placeholder="Giá cao nhất"
-                                onChange={(e) => setHighPrice(parseFloat(e.target.value))}
+                                onChange={(e) => setHighPrice(e.target.value)}
                             />
                         </div>
                     </div>
@@ -272,13 +284,19 @@ const CustomStorePage = () => {
                         <label className="font-semibold">Thức ăn thuộc quốc gia nào:</label>
                         <select
                             className="w-full p-2 border rounded"
-                            onChange={(e) => setCuisineType(e.target.value)}
+                            onChange={(e) => {
+                                const selectedFlag = Flags.find(flag => flag.link === e.target.value);
+                                if (selectedFlag) {
+                                    setCuisineType(selectedFlag.alt);
+                                    setCountryFlag(selectedFlag.link);
+                                }
+                            }}
                             defaultValue=""
                         >
                             <option value="" disabled>Chọn quốc gia</option>
-                            {cuisineOptions.map((cuisine) => (
-                                <option key={cuisine} value={cuisine}>
-                                    {cuisine}
+                            {Flags.map((flag) => (
+                                <option key={flag.alt} value={flag.link}>
+                                    {flag.alt}
                                 </option>
                             ))}
                         </select>

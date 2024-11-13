@@ -8,7 +8,7 @@ export const getRestaurantID = async (token: string) => {
     })
     const data = await response.json()
     if (response.ok) {
-        return data.user_data.restaurant_id
+        return data.userData.restaurant_id
     } else {
         console.log(data.error)
     }
