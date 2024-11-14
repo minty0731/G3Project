@@ -392,7 +392,7 @@ def get_all_restaurant_info_count():
         return api_response_data(ResponseKey.Message, 'Get restaurant total amount successfully', 
                                  ResponseKey.TotalRestaurantCountInfo, count)
     except ValueError:
-        return api_response_message(ResponseKey.Error, 'Error', 400)    
+        return api_response_message(ResponseKey.Error, ValueError, 400)    
 
 @app.route('/api/restaurant/amount/foods', methods=['GET'])
 def get_all_restaurants_food_count():
@@ -404,7 +404,7 @@ def get_all_restaurants_food_count():
         return api_response_data(ResponseKey.Message, 'Get restaurant total amount successfully', 
                                  ResponseKey.TotalRestaurantCountFoods, count)
     except ValueError:
-        return api_response_message(ResponseKey.Error, 'Error', 400)    
+        return api_response_message(ResponseKey.Error, ValueError, 400)    
 
 @app.route('/api/restaurant/home/info', methods=['GET'])
 def get_all_restaurant_info_list():
@@ -419,7 +419,7 @@ def get_all_restaurant_info_list():
         return api_response_data(ResponseKey.Message, 'Get restaurant info list successfully', 
                                  ResponseKey.TotalRestaurantListInfo, list_info)
     except ValueError:
-        return api_response_message(ResponseKey.Error, 'Error', 400)    
+        return api_response_message(ResponseKey.Error, ValueError, 400)    
 
 @app.route('/api/restaurant/home/foods', methods=['GET'])
 def get_all_restaurants_food_list():
@@ -428,14 +428,14 @@ def get_all_restaurants_food_list():
     """
     try:
         json_data = request.get_json()
-        page_number = json_data.get('pageNumber')
-        item_per_page = json_data.get('itemPerPage')
+        page_number = json_data.get('pageNumber', 1)
+        item_per_page = json_data.get('itemPerPage', 10)
         list_foods= RESTAURANT_REPO.get_home_food_list(page_number, item_per_page)
         print (list_foods)
         return api_response_data(ResponseKey.Message, 'Get restaurant foods list successfully', 
                                  ResponseKey.TotalRestaurantListFoods, list_foods)
     except ValueError:
-        return api_response_message(ResponseKey.Error, 'Error', 400)    
+        return api_response_message(ResponseKey.Error, ValueError, 400)    
 
 
 @app.route('/api/restaurant/filter/info', methods=['GET'])
@@ -450,7 +450,7 @@ def get_filtered_restaurant_info_info():
         return api_response_data(ResponseKey.Message, 'Get all filtered restaurant info list successfully', 
                                  ResponseKey.FilteredRestaurantInfoOption, list_info)
     except ValueError:
-        return api_response_message(ResponseKey.Error, 'Error', 400)    
+        return api_response_message(ResponseKey.Error, ValueError, 400)    
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)

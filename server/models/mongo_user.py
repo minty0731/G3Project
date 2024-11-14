@@ -31,29 +31,29 @@ class UserAuthentication:
     
 def create_diner_data_from_json(json_data: object) -> DinerData:
     diner_data = DinerData(
-        email=json_data.get('email'),
-        phone_number=json_data.get('phoneNumber'),
-        full_name=json_data.get('fullName'),
-        address=json_data.get('address'),
-        favorite_restaurants=json_data.get('favoriteRestaurants')
+        email=json_data.get('email', ''),
+        phone_number=json_data.get('phoneNumber', ''),
+        full_name=json_data.get('fullName', ''),
+        address=json_data.get('address', ''),
+        favorite_restaurants=json_data.get('favoriteRestaurants', [])
     )
     return diner_data
 
 def create_owner_data_from_json(json_data: object) -> OwnerData:
     owner_data = OwnerData(
-        email=json_data.get('email'),
-        phone_number=json_data.get('phoneNumber'),
-        full_name=json_data.get('fullName'),
-        restaurant_id=json_data.get('restaurantId')
+        email=json_data.get('email', ''),
+        phone_number=json_data.get('phoneNumber', ''),
+        full_name=json_data.get('fullName', ''),
+        restaurant_id=json_data.get('restaurantId', '')
     )
     return owner_data
 
 def create_user_auth_from_json(json_data: object, user_id: str) -> UserAuthentication:
     user_auth = UserAuthentication(
-        username=json_data.get('username'),
-        password=json_data.get('password'),
-        authentication_type=json_data.get('authenticationType'),
-        authentication_identifier=json_data.get('authenticationIdentifier'),
+        username=json_data.get('username', ''),
+        password=json_data.get('password', ''),
+        authentication_type=json_data.get('authenticationType', ''),
+        authentication_identifier=json_data.get('authenticationIdentifier', ''),
         user_id=user_id
     )
     return user_auth

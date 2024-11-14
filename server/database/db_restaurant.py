@@ -263,10 +263,8 @@ class RestaurantRepository:
 
         # Filter by food country type
         if filter.food_country_types:
-            if len(filter.food_country_types) > 1:
-                query["food_country_type"] = {"$in": filter.food_country_types}  # Array case
-            elif len(filter.food_country_types) == 1:
-                query["food_country_type"] = filter.food_country_types[0]  # Single value case
+            if filter.food_country_types != '':
+                query["food_country_type"] = {"$eq": filter.food_country_types}
 
         # Filter by delivery types (check the name field)
         if filter.delivery_types:
