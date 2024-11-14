@@ -406,7 +406,7 @@ def get_all_restaurants_food_count():
     except ValueError:
         return api_response_message(ResponseKey.Error, ValueError, 400)    
 
-@app.route('/api/restaurant/home/info', methods=['GET'])
+@app.route('/api/restaurant/home/info', methods=['POST'])
 def get_all_restaurant_info_list():
     """
     Get the list of total restaurant info, divided by pagination
@@ -421,7 +421,7 @@ def get_all_restaurant_info_list():
     except ValueError:
         return api_response_message(ResponseKey.Error, ValueError, 400)    
 
-@app.route('/api/restaurant/home/foods', methods=['GET'])
+@app.route('/api/restaurant/home/foods', methods=['POST'])
 def get_all_restaurants_food_list():
     """
     Get the list of total restaurant foods, divided by pagination, return by food list
@@ -438,7 +438,7 @@ def get_all_restaurants_food_list():
         return api_response_message(ResponseKey.Error, ValueError, 400)    
 
 
-@app.route('/api/restaurant/filter/info', methods=['GET'])
+@app.route('/api/restaurant/filter/info', methods=['POST'])
 def get_filtered_restaurant_info_info():
     """
     Get the list of filtered restaurant info
