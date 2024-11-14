@@ -28,3 +28,25 @@ const config: Config = {
   plugins: [],
 };
 export default config;
+
+// in case error in custom store api
+   /*
+        const token = Cookies.get('token')
+        if (token) {
+            const resID = await getRestaurantID(token)
+            const response = await fetch(`http://127.0.0.1:8080/api/restaurant/${resID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data.message)
+                alert(data.message)
+            } else {
+                console.error('Error fetching data');
+            }
+        }*/

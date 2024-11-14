@@ -1,11 +1,11 @@
 "use client"
 import React, { useState } from 'react';
 import { DeliveryLink, deliveryCompanies } from '@/constant/DeliveryLink';
-import { getRestaurantID } from '@/constant/RestaurantID';
 import { ImageUpload } from '@/components/ImageUpload';
 import { AddressData } from '@/constant/AddressData';
+import { createRestaurant } from '@/constant/RestaurantAPI';
 import { Flags } from '@/constant/CountryFlag';
-import Cookies from 'js-cookie';
+
 const CustomStorePage = () => {
     const [storeName, setStoreName] = useState<string>("");
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -128,27 +128,7 @@ const CustomStorePage = () => {
             foodCountryImageLink: countryFlag
         };
         console.log(data)
-
-        const token = Cookies.get('token')
-        if (token) {
-            const resID = await getRestaurantID(token)
-            const response = await fetch(`http://127.0.0.1:8080/api/restaurant/${resID}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data.message)
-                alert(data.message)
-            } else {
-                console.error('Error fetching data');
-            }
-        }
-
+        createRestaurant(data)
     }
     return (
         <div>
