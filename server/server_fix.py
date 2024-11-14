@@ -122,7 +122,8 @@ def signup():
         if user_type == UserType.Owner:
             restaurant_id = RESTAURANT_REPO.create_restaurant_template(user_id)
             USER_REPO.update_owner_restaurant_id(user_id, restaurant_id)
-        
+            RESTAURANT_REPO.create_category_templates(restaurant_id)
+            
         return api_response_message(ResponseKey.UserID, user_id, 201)
     else:
         return api_response_message(ResponseKey.Error, 'Invalid input', 400)

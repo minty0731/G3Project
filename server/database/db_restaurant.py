@@ -92,6 +92,11 @@ class RestaurantRepository:
         )
         return result.modified_count > 0
 
+    def create_category_templates(self, restaurant_id: str):
+        for category_name in CollectionName.RestaurantCategoryNames:
+            self.create_category_db(MongoCategory(restaurant_id, category_name))
+            
+            
     def create_food_db(self, mongo_food: MongoFood) -> str:
         """
         Create the food data
@@ -251,16 +256,24 @@ class RestaurantRepository:
     
     def create_query_for_filtered_restaurants(self, filter: MongoFilteredRestaurant) -> dict[str, object]:
         query = {}
+        query["$or"] = []
+        check_boolean = 0
         # Filter by boolean attributes using OR
         if filter.pure_vegan:
+            check_boolean = 1
             query["$or"].append({"pure_vegan": True})
         if filter.take_away:
+            check_boolean = 1
             query["$or"].append({"take_away": True})
         if filter.dine_in:
+            check_boolean = 1
             query["$or"].append({"dine_in": True})
         if filter.buffet:
+            check_boolean = 1
             query["$or"].append({"buffet": True})
-
+        if check_boolean == 0:
+            del query["$or"]
+            
         # Filter by food country type
         if filter.food_country_types:
             if filter.food_country_types != '':
@@ -276,9 +289,9 @@ class RestaurantRepository:
         # Filter by price range (using AND logic)
         price_conditions = {}
         if filter.price_over > 0:
-            price_conditions['lowest_price'] = {'$gte': filter.price_over}
+            price_conditions["lowest_price"] = {"$gte": filter.price_over}
         if filter.price_under > 0:
-            price_conditions['highest_price'] = {'$lte': filter.price_under}
+            price_conditions["highest_price"] = {"$lte": filter.price_under}
 
         # Combine price conditions with the main query
         if price_conditions:

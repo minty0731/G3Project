@@ -8,6 +8,8 @@ class CollectionName:
     RestaurantData = 'restaurant_data'
     RestaurantCategory = 'restaurant_category'
     RestaurantFood = 'restaurant_food'
+    # Originally, we allow user to create their own category, until we realise tha
+    RestaurantCategoryNames = ["Món chính", "Món phụ", "Tráng miệng", "Đồ uống", "Đặc biệt", "Combo"]
 
 
 class ResponseKey:
