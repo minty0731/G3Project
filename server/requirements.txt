@@ -4,3 +4,4 @@ PyJWT
 Flask-Swagger-UI
 pymongo
 cloudinary
+geopy

@@ -145,6 +145,45 @@ class RestaurantRepository:
         )
         return result.modified_count > 0
     
+    def get_food_image_link(self, food_id : str) -> str:
+        """
+        Get the food image link
+        """
+        collection_food_data = self.db_manager.get_collection(
+            CollectionName.RestaurantFood)
+
+        result = collection_food_data.find_one(
+            {"_id": ObjectId(food_id)},
+            {"image_link": 1, "_id": 0}
+        )
+            
+        return result['image_link'] if result['image_link'] else ''
+    
+    def delete_food_db(self, food_id: str) -> bool:
+        """
+        Delete the food data
+        """
+        collection_food_data = self.db_manager.get_collection(
+            CollectionName.RestaurantFood)
+        collection_category_data = self.db_manager.get_collection(
+            CollectionName.RestaurantCategory)
+
+        category_id = collection_food_data.find_one(
+            {"_id": ObjectId(food_id)},
+            {"category_id": 1, "_id": 0}
+        )['category_id']
+                
+        # Update the corresponding category's total food amount
+        collection_category_data.update_one(
+            {"_id": ObjectId(category_id)},
+            # Decrease the total_food_amount by 1
+            {"$inc": {"total_food_amount": -1}}
+        )
+
+        result = collection_food_data.delete_one({"_id": ObjectId(food_id)})
+        
+        return result.deleted_count > 0
+    
     def get_home_restaurant_amount(self) -> int:
         """
         Retrieve restaurant amount for pagination in home page
@@ -279,12 +318,12 @@ class RestaurantRepository:
             if filter.food_country_types != '':
                 query["food_country_type"] = {"$eq": filter.food_country_types}
 
-        # Filter by delivery types (check the name field)
+        # Filter by delivery types (check the company field)
         if filter.delivery_types:
             if len(filter.delivery_types) > 1:
-                query["delivery_collection.name"] = {"$in": filter.delivery_types}  # Array case
+                query["delivery_collection.company"] = {"$in": filter.delivery_types}  # Array case
             elif len(filter.delivery_types) == 1:
-                query["delivery_collection.name"] = filter.delivery_types[0]  # Single value case
+                query["delivery_collection.company"] = filter.delivery_types[0]  # Single value case
 
         # Filter by price range (using AND logic)
         price_conditions = {}

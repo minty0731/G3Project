@@ -20,6 +20,7 @@ class ResponseKey:
     Message = 'message'
     Error = 'error'
     UserID = 'userId'
+    Users = 'users'
     RestaurantID = 'restaurantId'
     RestaurantInfo = 'restaurantInfo'
     RestaurantFoods = 'restaurantFoods'

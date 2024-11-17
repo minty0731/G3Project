@@ -9,7 +9,7 @@ def to_camel_case(snake_str: str) -> str:
 def convert_value(value: object, camel_case: bool) -> list | dict[str, object] | object:
     """Recursively convert values to they are dataclasses, lists, or dictionaries, have a check on wheher camelCase or not."""
     if isinstance(value, list):
-        return [convert_value(item, to_camel_case) for item in value]  # Recursively convert each item in the list
+        return [convert_value(item, camel_case) for item in value]  # Recursively convert each item in the list
     elif isinstance(value, dict):
         return {to_camel_case(key): convert_value(val, camel_case) for key, val in value.items()} if camel_case else value
     elif is_dataclass(value):
@@ -24,7 +24,7 @@ def dataclass_to_dict(dataclass: object, camel_case: bool = False) -> dict[str, 
     return {
         to_camel_case(key) if camel_case else key: convert_value(value, camel_case) 
         for key, value in asdict(dataclass).items()
-        if value not in (None, '', [])
+        if value not in (None, '', [], (), 0)
     }
     
 

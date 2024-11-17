@@ -4,6 +4,7 @@ Use for inserting with mongo restaurant
 from dataclasses import dataclass, field
 from typing import List
 from misc.utils import to_camel_case
+from database.geopy_location import GeocodingManager
 
 @dataclass
 class MongoDeliveryLink:
@@ -21,7 +22,8 @@ class MongoAddress:
     Use for delivery
     """
     address_text: str = ''
-    map_location: str = ''
+    map_latitude: float = 0
+    map_longitude: float = 0
     branch_name: str = ''
     
 
@@ -95,10 +97,13 @@ class MongoFilteredRestaurant:
     price_over: int = 0
     price_under: int = 0
     
-def create_address_data_from_json(json_data: object) -> MongoAddress:
+def create_address_data_from_json(json_data: object, geocoding_manager: GeocodingManager) -> MongoAddress:
+    address = json_data.get('addressText', '')
+    location = geocoding_manager.geocode(address)
     return MongoAddress(
-            address_text=json_data.get('addressText', ''),
-            map_location=json_data.get('mapLocation', ''),
+            address_text=address,
+            map_latitude=location[0] if bool(location and location[0]) else 0,
+            map_longitude=location[1] if bool(location and location[1]) else 0,
             branch_name=json_data.get('branchName', '')
         )
 
@@ -108,8 +113,8 @@ def create_delivery_data_from_json(json_data: object) -> MongoAddress:
             link=json_data.get('link', '')
         )
     
-def create_restaurant_data_from_json(owner_id: str, json_data: object) -> MongoRestaurant:
-    address_list = [create_address_data_from_json(delivery_json) for delivery_json in json_data.get('addressCollection', [])]
+def create_restaurant_data_from_json(owner_id: str, json_data: object, geocoding_manager: GeocodingManager) -> MongoRestaurant:
+    address_list = [create_address_data_from_json(address_json, geocoding_manager) for address_json in json_data.get('addressCollection', [])]
     delivery_list = [create_delivery_data_from_json(delivery_json) for delivery_json in json_data.get('deliveryCollection', [])]
     
     restaurant_data = MongoRestaurant(

@@ -9,6 +9,7 @@ from database.db_manager import DatabaseManager
 from database.db_user import UserRepository
 from database.cloudinary_image import CloudinaryManager
 import random
+from geopy.geocoders import Nominatim
 
 actual_id ='67162174f9b8ff18eda6aaaf'
 
@@ -100,7 +101,11 @@ def display_grouped_foods(restaurant_id: str):
 
 user_id = '671614d2bc0f745bb6a56323'
 owner_id = '671a4afd23928f9f3fc963e4'
-res_id = '672b5f5ee12ea6f036439eee'
+res_id = '6737f9b398d326f7c25b2acb'
 res_id2 = '672d55fa8c65473ddc82a892'
 
-create_categories_and_foods(res_id2)
+
+geolocator = Nominatim(user_agent="VEGAN_REVIEW_APP_COS40005")
+location = geolocator.geocode("438 Phạm Văn Đồng, P. Hiệp Bình Chánh,  Tp. Thủ Đức, TP. HCM")
+# test_res = RESTAURANT_REPO.get_restaurant_info(res_id)
+print((location.latitude, location.longitude))
