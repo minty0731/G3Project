@@ -10,7 +10,7 @@ def generate_token(key: str, user_id: str):
     Generate a JWT token for the given user ID with the key
     """
     payload = {
-        'exp': datetime.utcnow() + timedelta(hours=1),
+        'exp': datetime.utcnow() + timedelta(hours=4),
         'iat': datetime.utcnow(),
         'sub': user_id
     }

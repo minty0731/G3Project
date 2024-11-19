@@ -2,7 +2,7 @@
 Noted that for some reason, it cant import if you run inside any other folders
 """
 from bson.objectid import ObjectId
-from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood
+from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood, MongoReviewRating
 from database.db_restaurant import RestaurantRepository
 from misc.const import CollectionName, UserType
 from database.db_manager import DatabaseManager
@@ -99,6 +99,11 @@ def display_grouped_foods(restaurant_id: str):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def create_and_update_review_manager(restaurant_id: str):
+    review_manager_id = RESTAURANT_REPO.create_review_manager(restaurant_id)
+    check = RESTAURANT_REPO.update_restaurant_review_manager_id(restaurant_id, review_manager_id)
+    return 'Success' if check else 'Failed'
+
 user_id = '671614d2bc0f745bb6a56323'
 owner_id = '671a4afd23928f9f3fc963e4'
 res_id = '6737f9b398d326f7c25b2acb'
@@ -106,6 +111,18 @@ res_id2 = '672d55fa8c65473ddc82a892'
 
 
 geolocator = Nominatim(user_agent="VEGAN_REVIEW_APP_COS40005")
-location = geolocator.geocode("438 Phạm Văn Đồng, P. Hiệp Bình Chánh,  Tp. Thủ Đức, TP. HCM")
+location = geolocator.geocode("372/17 Cách mạng tháng 8, P.10, Quận 3, TP.HCM")
 # test_res = RESTAURANT_REPO.get_restaurant_info(res_id)
-print((location.latitude, location.longitude))
+# print((location.latitude, location.longitude))
+
+review = MongoReviewRating(
+        review_manager_id="rm123",
+        user_id="u456",
+        user_type="customer",
+        user_image="http://example.com/image.jpg",
+        rating_amount=4.5,
+        rating_text="Great service!"
+    )
+restaurant_id_list = ['6736ed3821c22145be2db9ce', '6737f9b398d326f7c25b2acb', '6737f9e898d326f7c25b2ad4', '6737fa4b98d326f7c25b2add', '6737fb5498d326f7c25b2ae6', '673a2c5e865d1f7f0d18be17', '673a2c8e865d1f7f0d18be20', '673a2ccc865d1f7f0d18be29', '673a2cf3865d1f7f0d18be32', '673a2d13865d1f7f0d18be3b']
+
+CLOUDINARY_MANAGER.upload_image('default_user_profile.png', 'Website Image', 'default_user_profile')

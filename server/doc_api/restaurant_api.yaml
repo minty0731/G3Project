@@ -244,7 +244,68 @@ components:
         imageLink:
           type: string
           example: "v1731498978/Foods/6737fb5498d326f7c25b2ae7_food_image.png"
-
+    Comment:
+      type: object
+      properties:
+        commentId:
+          type: string
+          example: "673ceaf3dc59bc8f19937845"
+        commentText:
+          type: string
+          example: "comment test 1 1"
+        dateCreated:
+          type: string
+          format: date-time
+          example: "Wed, 20 Nov 2024 02:45:46 GMT"
+        userId:
+          type: string
+          example: "6736ed3821c22145be2db9cc"
+        username:
+          type: string
+          example: "user1"
+        userImage:
+          type: string
+          example: "v1732026156/Website Image/default_user_profile.webp"
+        userType:
+          type: string
+          example: "owner_other"
+    Rating:
+      type: object
+      properties:    
+        ratingId:
+          type: string
+          example: "673ce9d823458a2d1afe5b56"
+        ratingAmount:
+          type: number
+          format: float
+          example: 3.0
+        ratingText:
+          type: string
+          example: "testtst"
+        dateCreated:
+          type: string
+          format: date-time
+          example: "Wed, 20 Nov 2024 02:41:02 GMT"
+        userId:
+          type: string
+          example: "6736ed3821c22145be2db9cc"
+        username:
+          type: string
+          example: "user1"
+        userImage:
+          type: string
+          example: "v1732026156/Website Image/default_user_profile.webp"
+        userType:
+          type: string
+          example: "owner_other"
+        countComment:
+          type: integer
+          example: 5
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+      
 paths:
   /api/restaurant:
     post:
@@ -888,5 +949,265 @@ paths:
                   error:
                     type: string
                     example: "Filtered restaurants not found"
+        '500':
+          $ref: "#/components/responses/500ExceptionError"
+  /api/restaurant/home/searched_info_list:
+    post:
+      summary: Get searched restaurant information
+      description: Retrieves a list of restaurants that match the specified query, check for name or address.
+      operationId: getSearchedRestaurantInfo
+      tags:
+        - Home
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                searchQuery:
+                  type: string
+                  example: "Kira"  
+      responses:
+        '200':
+          description: Get all searched restaurant list successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Get all searched restaurant list successfully"
+                  searchedRestaurantInfoList:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RestaurantRecieve"
+        '404':
+          description: Searched restaurants not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Searched restaurants not found"
+        '500':
+          $ref: "#/components/responses/500ExceptionError"
+          
+
+  /api/restaurant/{restaurant_id}/review_rating:
+    post:
+      summary: Create a review rating for a restaurant
+      description: Allows users to submit a rating and comment for a specified restaurant.
+      operationId: createReviewRating
+      tags:
+        - Review
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant for which the review is being created.
+          schema:
+            type: string
+            example: "6736ed3821c22145be2db9ce"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ratingAmount:
+                  type: number
+                  format: float
+                  example: 3.0
+                  description: The rating amount given by the user, typically between 1.0 and 5.0.
+                ratingText:
+                  type: string
+                  example: "testtst"
+                  description: The text of the review or comment provided by the user.
+      responses:
+        '201':
+          description: Create review rating successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Create review rating successfully"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Create review rating failed"
+        '500':
+          $ref: "#/components/responses/500ExceptionError"
+
+  /api/restaurant/{restaurant_id}/review_comment:
+    post:
+      summary: Create a comment for a restaurant review
+      description: Allows users to submit a comment on a specific review for a restaurant.
+      operationId: createReviewComment
+      tags:
+        - Review
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant for which the comment is being created.
+          schema:
+            type: string
+            example: "6736ed3821c22145be2db9ce"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ratingId:
+                  type: string
+                  example: "673ce9d823458a2d1afe5b56"
+                  description: The ID of the rating that this comment is associated with.
+                commentText:
+                  type: string
+                  example: "this is a comment"
+                  description: The text of the comment provided by the user.
+      responses:
+        '201':
+          description: Create review comment successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Create review comment successfully"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Create review comment failed"
+        '500':
+          $ref: "#/components/responses/500ExceptionError"
+  /api/restaurant/{restaurant_id}/review_manager:
+    get:
+      summary: Get review manager for a restaurant
+      description: Retrieves the review manager information, including average rating and total comments for a specified restaurant.
+      operationId: getReviewManager
+      tags:
+        - Review
+      security:
+        - jwt_token: []
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant for which the review manager is being retrieved.
+          schema:
+            type: string
+            example: "6736eccd21c22145be2db9c5"
+      responses:
+        '200':
+          description: Get review manager successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Get review manager successfully"
+                  reviewManager:
+                    type: object
+                    properties:
+                      average_rating:
+                        type: number
+                        format: float
+                        example: 4.0
+                        description: The average rating of the restaurant based on reviews.
+                      restaurant_id:
+                        type: string
+                        example: "6736eccd21c22145be2db9c5"
+                        description: The unique identifier of the restaurant.
+                      total_comment:
+                        type: integer
+                        example: 8
+                        description: The total number of comments made about the restaurant.
+                      total_rating:
+                        type: integer
+                        example: 4
+                        description: The total number of ratings given to the restaurant.
+        '404':
+          description: Review manager not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Get review manager failed"
+        '500':
+          $ref: "#/components/responses/500ExceptionError"
+  /api/restaurant/{restaurant_id}/reviews:
+    get:
+      summary: Get all reviews and ratings for a restaurant
+      description: Retrieves all reviews and their associated comments for a specified restaurant.
+      operationId: getAllReviews
+      tags:
+        - Review
+      parameters:
+        - name: restaurant_id
+          in: path
+          required: true
+          description: The ID of the restaurant for which reviews are being retrieved.
+          schema:
+            type: string
+            example: "6736eccd21c22145be2db9c5"
+      responses:
+        '200':
+          description: Get all reviews successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Get all reviews successfully"
+                  reviews:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Rating"
+        '404':
+          description: Reviews not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Get all reviews failed"
         '500':
           $ref: "#/components/responses/500ExceptionError"

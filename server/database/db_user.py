@@ -1,9 +1,9 @@
 from dataclasses import asdict
+from bson.objectid import ObjectId
 from database.db_manager import DatabaseManager
 from models.mongo_user import DinerData, OwnerData, UserAuthentication
-from misc.const import CollectionName, UserType
+from misc.const import CollectionName, UserType, ReviewUserType
 from misc.signup_data import SignUpData, create_user_data_and_auth_from_signup_data
-from bson.objectid import ObjectId
 from misc.utils import dataclass_to_dict
 
 def convert_doc_to_diner_data(doc):
@@ -109,7 +109,7 @@ class UserRepository:
         # Update owner data
         result_data = collection_owner_data.update_one(
             {"_id": ObjectId(owner_id)},
-            {"$set": {"restaurant_id": restaurant_id}}
+            {"$set": { "restaurant_id": restaurant_id } }
         )
 
         # Return true if at least one of the updates was successful
@@ -186,7 +186,6 @@ class UserRepository:
         user_doc = collection_diners.find_one({'_id': ObjectId(user_id)})
         user_data = None
         if user_doc:
-
             user_data = convert_doc_to_diner_data(user_doc)
         else:
             collection_owners = self.db_manager.get_collection(
@@ -226,7 +225,36 @@ class UserRepository:
             return False
         user_doc = collection.find_one({'_id': ObjectId(user_id)})
         return False if user_doc is None else True
+    
+    def get_review_user_type(self, user_id: str, restaurant_id: str) -> str:
+        if self.check_if_user_exist_from_id(user_id, UserType.Diner):
+            return ReviewUserType.Diner
+        
+        if self.check_if_user_exist_from_id(user_id, UserType.Owner):
+            # Check if owner of the same restaurant
+            owner_of_restaurant = self.db_manager.get_field_value_by_id(CollectionName.OwnerData, user_id, 'restaurant_id') == restaurant_id
+            return ReviewUserType.OwnerSame if owner_of_restaurant else ReviewUserType.OwnerOther
 
+        return ''
+    
+    def get_user_image(self, user_id: str) -> str:
+        if self.check_if_user_exist_from_id(user_id, UserType.Diner):
+            return self.db_manager.get_field_value_by_id(CollectionName.DinerData, user_id, 'profile_image_link')
+        
+        if self.check_if_user_exist_from_id(user_id, UserType.Owner):
+            return self.db_manager.get_field_value_by_id(CollectionName.OwnerData, user_id, 'profile_image_link')
+
+        return ''
+    
+    def get_username(self, user_id: str) -> str:
+        if self.check_if_user_exist_from_id(user_id, UserType.Diner):
+            return self.db_manager.get_field_value_by_id(CollectionName.DinerAuthentication, user_id, 'username', 'user_id')
+        
+        if self.check_if_user_exist_from_id(user_id, UserType.Owner):
+            return self.db_manager.get_field_value_by_id(CollectionName.OwnerAuthentication, user_id, 'username', 'user_id')
+
+        return ''
+    
     def get_all_users(self):
         diner_data = self.db_manager.get_all_docs_from_collection(
             CollectionName.DinerData)

@@ -9,7 +9,7 @@ from database.db_user import UserRepository
 from database.db_restaurant import RestaurantRepository
 from database.cloudinary_image import CloudinaryManager
 from database.geopy_location import GeocodingManager
-from models.mongo_restaurant import create_restaurant_data_from_json, create_category_data_from_json, create_food_data_from_json, create_filtered_restaurant_from_json
+from models.mongo_restaurant import create_restaurant_data_from_json, create_category_data_from_json, create_food_data_from_json, create_filtered_restaurant_from_json, create_review_rating_from_json, create_review_comment_from_json
 from models.mongo_user import create_diner_data_from_json, create_owner_data_from_json, create_user_auth_from_json
 from misc.signup_data import create_signup_data_from_json
 from misc.const import ResponseKey, UserType
@@ -112,6 +112,27 @@ def require_user_is_owner(func):
         # If the check passes, call the decorated function
         return func(user_id, *args, **kwargs)
     return wrapper
+
+def require_owner_of_restaurant(func):
+    """
+    Decorator to check if user is the owner of the restaurant
+    """
+    @wraps(func)
+    def wrapper(user_id, *args, **kwargs):
+        # Check if the user exists as an owner
+        if not USER_REPO.check_if_user_exist_from_id(user_id, UserType.Owner):
+            return api_response_error('Not allowed to create restaurant', 403)
+
+        # If the check passes, call the decorated function
+        return func(user_id, *args, **kwargs)
+    return wrapper
+
+"""
+Helper function others
+"""
+def check_review_user_type(message_key: str, message_result: str, sent_key: str, sent_data: str, status: int = 200) -> tuple[object, int]:
+    """Use to return data"""
+    return jsonify({message_key: message_result, sent_key: sent_data}), status
 
 @app.route('/doc_api/<path:filename>', methods=['GET'])
 def serve_api_files(filename):
@@ -485,6 +506,88 @@ def get_restaurant_foods(restaurant_id):
     except Exception as e:
         return api_response_error(e, 500)
 
+
+@app.route('/api/restaurant/<string:restaurant_id>/review_rating', methods=['POST'])
+@require_jwt_token
+def create_review_rating(user_id, restaurant_id):
+    """
+    Create review rating (first layer)
+    """
+    try:
+        json_data = request.get_json()
+        review_user_type = USER_REPO.get_review_user_type(user_id, restaurant_id)
+        image_link = USER_REPO.get_user_image(user_id)
+        username = USER_REPO.get_username(user_id)
+        rating_data = create_review_rating_from_json(restaurant_id, user_id, review_user_type, username, image_link, json_data)
+        rating_id = RESTAURANT_REPO.create_review_rating(rating_data)
+        
+        if rating_id:            
+            return api_response_message(ResponseKey.Message, 'Create review rating succesfully', 201)
+        else:
+            return api_response_error('Create review rating failed')
+        
+    except Exception as e:
+        return api_response_error(e, 500)
+    
+@app.route('/api/restaurant/<string:restaurant_id>/review_comment', methods=['POST'])
+@require_jwt_token
+def create_review_comment(user_id, restaurant_id):
+    """
+    Create review comment (second layer)
+    """
+    try:
+        json_data = request.get_json()
+        review_user_type = USER_REPO.get_review_user_type(user_id, restaurant_id)
+        image_link = USER_REPO.get_user_image(user_id)
+        username = USER_REPO.get_username(user_id)
+        comment_data = create_review_comment_from_json(restaurant_id, user_id, review_user_type, username, image_link, json_data)
+        comment_id = RESTAURANT_REPO.create_review_comment(comment_data)
+        
+        if comment_id:            
+            return api_response_message(ResponseKey.Message, 'Create review comment succesfully', 201)
+        else:
+            return api_response_error('Create review comment failed')
+        
+    except Exception as e:
+        return api_response_error(e, 500)
+
+@app.route('/api/restaurant/<string:restaurant_id>/reviews', methods=['GET'])
+def get_reviews(restaurant_id):
+    """
+    Get all reviews
+    """
+    try:
+        reviews = RESTAURANT_REPO.get_reviews(restaurant_id)
+        
+        if reviews:            
+            return api_response_data(ResponseKey.Message, 'Get all reviews successfully', 
+                                 ResponseKey.Reviews, reviews)
+        else:
+            return api_response_error('Get all reviews failed')
+        
+    except Exception as e:
+        return api_response_error(e, 500)
+
+@app.route('/api/restaurant/<string:restaurant_id>/review_manager', methods=['GET'])
+@require_jwt_token
+@require_user_is_owner
+def get_review_manager(user_id, restaurant_id):
+    """
+    Get review manager
+    """
+    try:
+        review_manager = RESTAURANT_REPO.get_review_manager(restaurant_id)
+        
+        if review_manager:            
+            return api_response_data(ResponseKey.Message, 'Get review manager successfully', 
+                                 ResponseKey.ReviewManager, dataclass_to_dict(review_manager))
+        else:
+            return api_response_error('Get review manager failed')
+        
+    except Exception as e:
+        return api_response_error(e, 500)
+    
+    
 @app.route('/api/restaurant/home/info_amount', methods=['GET'])
 def get_all_restaurant_info_count():
     """
@@ -551,7 +654,7 @@ def get_all_restaurants_food_list():
 
 
 @app.route('/api/restaurant/home/filtered_info_list', methods=['POST'])
-def get_filtered_restaurant_info_info():
+def get_filtered_restaurant_info_list():
     """
     Get the list of filtered restaurant info
     """
@@ -564,6 +667,24 @@ def get_filtered_restaurant_info_info():
                                  ResponseKey.FilteredRestaurantInfoOption, filtered_list_info)
         else:
             return api_response_error('Filtered restaurants not found', 404)
+        
+    except Exception as e:
+        return api_response_error(e, 500)
+    
+@app.route('/api/restaurant/home/searched_info_list', methods=['POST'])
+def get_searched_restaurant_info_list():
+    """
+    Get the list of searched restaurant info based on query
+    """
+    try:
+        json_data = request.get_json()
+        searh_query = json_data.get('searchQuery')
+        searched_list_info = RESTAURANT_REPO.get_searched_restaurant_list(searh_query)
+        if searched_list_info:
+            return api_response_data(ResponseKey.Message, 'Get all searched restaurant list successfully', 
+                                 ResponseKey.SearchedRestaurantInfo, searched_list_info)
+        else:
+            return api_response_error('Searched restaurants not found', 404)
         
     except Exception as e:
         return api_response_error(e, 500)

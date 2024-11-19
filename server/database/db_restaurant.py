@@ -1,10 +1,10 @@
 from dataclasses import asdict
 from database.db_manager import DatabaseManager
-from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood, MongoFilteredRestaurant
+from models.mongo_restaurant import MongoRestaurant, MongoCategory, MongoFood, MongoFilteredRestaurant, MongoReviewManager, MongoReviewRating, MongoReviewComment
 from misc.const import CollectionName
-from bson.objectid import ObjectId
 from misc.utils import dataclass_to_dict, convert_value
-
+from bson.objectid import ObjectId
+import math
 
 class RestaurantRepository:
     def __init__(self, db_manager: DatabaseManager):
@@ -63,6 +63,19 @@ class RestaurantRepository:
         result = collection_restaurant_data.update_one(
             {"_id": ObjectId(restaurant_id)},
             {"$set": dataclass_to_dict(mongo_restaurant)}
+        )
+        return result.modified_count > 0
+    
+    def update_restaurant_review_manager_id(self, restaurant_id: str, review_manager_id: str) -> bool:
+        """
+        Update the restaurant data.
+        """
+        collection_restaurant_data = self.db_manager.get_collection(
+            CollectionName.RestaurantData)
+
+        result = collection_restaurant_data.update_one(
+            {"_id": ObjectId(restaurant_id)},
+            {"$set": { "review_manager_id": review_manager_id } }
         )
         return result.modified_count > 0
 
@@ -358,3 +371,194 @@ class RestaurantRepository:
             filtered_restaurants.append(filtered_restaurant)
             
         return filtered_restaurants
+    
+    def get_searched_restaurant_list(self, search_string: str) -> list[dict]:
+        """
+        Retrieve the list of restaurants that is searched on query, by name or address
+        """
+        collection_restaurant_data = self.db_manager.get_collection(
+            CollectionName.RestaurantData)
+
+        query = {
+            "$or": [
+                { "name": { "$regex": search_string, "$options": "i" } },  # Case-insensitive search for name
+                { "address_collection": { "$elemMatch": { "address_text": { "$regex": search_string, "$options": "i" } } } }  # Case-insensitive search within addresses
+            ]
+        }
+        
+        # Retrieve paginated results
+        searched_restaurant_docs = list(collection_restaurant_data.find(query))
+        
+        searched_restaurants = []
+        for searched_restaurant_doc in searched_restaurant_docs:
+            id = searched_restaurant_doc.pop('_id')
+            searched_restaurant = convert_value(searched_restaurant_doc, True)
+            searched_restaurant['restaurantId'] = str(id)
+            searched_restaurants.append(searched_restaurant)
+            
+        return searched_restaurants
+    
+    def create_review_manager(self, restaurant_id: str) -> str:
+        """
+        Create the restaurant review manager
+        """
+        collection_review_manager = self.db_manager.get_collection(
+            CollectionName.ReviewManager)
+
+        review_manager = MongoReviewManager(restaurant_id=restaurant_id)
+        doc_review_manager = collection_review_manager.insert_one(
+            asdict(review_manager))
+        review_manager_id = str(doc_review_manager.inserted_id)
+        
+        return review_manager_id
+    
+    def get_review_manager(self, restaurant_id: str) -> MongoReviewManager:
+        """
+        Get the restaurant review manager
+        """        
+        collection_review_manager = self.db_manager.get_collection(
+            CollectionName.ReviewManager)
+
+        # Fetch the restaurant document by its ID
+        review_manager_doc = collection_review_manager.find_one({"restaurant_id": restaurant_id})
+
+        if review_manager_doc:
+            # Exclude '_id' if not needed
+            review_manager_doc.pop('_id', None)  # Remove _id if MongoRestaurant doesn't accept it
+            review_manager = MongoReviewManager(**review_manager_doc)
+            return review_manager
+        else:
+            return None
+        
+    def update_manager_ratings(self, review_manager_id: str) -> None:
+        """
+        Update the manager's total and average ratings based on normal rating.
+        """
+        collection_review_manager = self.db_manager.get_collection(
+            CollectionName.ReviewManager)
+        collection_review_rating = self.db_manager.get_collection(
+            CollectionName.ReviewRating)
+        
+        pipeline = [
+            {
+                "$match": {
+                    "review_manager_id": review_manager_id  # Match normal docs by manager ID
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "total_rating": { "$count": {} },  # Sum of rating_amounts
+                    "average_rating": { "$avg": "$rating_amount" }  # Average of rating_amounts
+                }
+            }
+        ]
+
+        # Run the aggregation pipeline
+        result = list(collection_review_rating.aggregate(pipeline))
+
+        if result:
+            total_rating = result[0]['total_rating']
+            average_rating = result[0]['average_rating']
+            # Round the average rating to 2 decimal places
+            average_rating = round(average_rating, 2)
+        else:
+            total_rating = 0
+            average_rating = 0.00
+
+        # Update the manager document with the new total and average ratings
+        collection_review_manager.update_one(
+            {"_id": ObjectId(review_manager_id)},
+            {"$set": {"total_rating": total_rating, "average_rating": average_rating}}
+        )
+    
+    def update_manager_comments(self, review_manager_id: str, rating_id: str) -> None:
+        """
+        Update the manager's and comments ammount review manager ammount
+        """
+        collection_review_rating = self.db_manager.get_collection(
+            CollectionName.ReviewRating)
+        collection_review_manager = self.db_manager.get_collection(
+            CollectionName.ReviewManager)
+        
+        
+        rating_comment_amount = self.db_manager.count_documents_by_field(CollectionName.ReviewComment, 'rating_id', rating_id)
+        manager_comment_amount = self.db_manager.count_documents_by_field(CollectionName.ReviewComment, 'review_manager_id', review_manager_id)
+        
+        collection_review_rating.update_one(
+            {"_id": ObjectId(rating_id)},
+            {"$set": {"count_comment": rating_comment_amount}}
+        )
+        
+        collection_review_manager.update_one(
+            {"_id": ObjectId(review_manager_id)},
+            {"$set": {"total_comment": manager_comment_amount}}
+        )
+        
+    def create_review_rating(self, review_rating: MongoReviewRating) -> str:
+        """
+        Create the restaurant review rating
+        """
+        
+        collection_review_rating = self.db_manager.get_collection(
+            CollectionName.ReviewRating)
+        
+        review_manager_id = self.db_manager.get_field_value_by_id(CollectionName.RestaurantData, review_rating.restaurant_id, 'review_manager_id')
+        review_rating.review_manager_id = review_manager_id
+
+        doc_review_rating = collection_review_rating.insert_one(
+            asdict(review_rating))
+        review_rating_id = str(doc_review_rating.inserted_id)
+
+        # Update review manager:
+        self.update_manager_ratings(review_manager_id)
+        
+        return review_rating_id
+    
+    def create_review_comment(self, review_comment: MongoReviewComment) -> str:
+        """
+        Create the restaurant review comment
+        """
+        collection_review_comment = self.db_manager.get_collection(
+            CollectionName.ReviewComment)
+        
+        review_manager_id = self.db_manager.get_field_value_by_id(CollectionName.RestaurantData, review_comment.restaurant_id, 'review_manager_id')
+        review_comment.review_manager_id = review_manager_id
+
+        doc_review_comment = collection_review_comment.insert_one(
+            asdict(review_comment))
+        review_comment_id = str(doc_review_comment.inserted_id)
+
+        # Update review manager:
+        self.update_manager_comments(review_manager_id, review_comment.rating_id)
+        
+        return review_comment_id
+    
+    def get_reviews(self, restaurant_id: str) -> str:
+        """
+        Create the restaurant review comment
+        """
+        collection_review_rating = self.db_manager.get_collection(
+            CollectionName.ReviewRating)
+        collection_review_comment = self.db_manager.get_collection(
+            CollectionName.ReviewComment)
+        
+        rating_docs = list(collection_review_rating.find({"restaurant_id": restaurant_id}))
+        
+        reviews = []
+        for rating_doc in rating_docs:
+            rating_id = rating_doc.pop('_id')
+            rating = convert_value(rating_doc, True)
+            rating['ratingId'] = str(rating_id)
+            rating['comments'] = []
+            comment_docs = list(collection_review_comment.find({"restaurant_id": restaurant_id, "rating_id": rating['ratingId']}))
+            
+            for comment_doc in comment_docs:
+                comment_id = comment_doc.pop('_id')
+                comment = convert_value(comment_doc, True)
+                comment['commentId'] = str(comment_id)
+                rating['comments'].append(comment)
+            
+            reviews.append(rating)
+            
+        return reviews

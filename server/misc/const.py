@@ -8,7 +8,10 @@ class CollectionName:
     RestaurantData = 'restaurant_data'
     RestaurantCategory = 'restaurant_category'
     RestaurantFood = 'restaurant_food'
-    # Originally, we allow user to create their own category, until we realise tha
+    ReviewManager = 'review_manager'
+    ReviewRating = 'review_rating'
+    ReviewComment = 'review_comment'
+    # Originally, we allow user to create their own category, until we dont
     RestaurantCategoryNames = ["Món chính", "Món phụ", "Tráng miệng", "Đồ uống", "Đặc biệt", "Combo"]
 
 
@@ -29,7 +32,10 @@ class ResponseKey:
     TotalRestaurantCountFoods= 'totalRestaurantFoodAmount'
     TotalRestaurantListInfo = 'totalRestaurantInfoList'
     TotalRestaurantListFoods= 'totalRestaurantFoodList'
-    FilteredRestaurantInfoOption= 'filteredRestaurantInfoOption'
+    FilteredRestaurantInfoOption = 'filteredRestaurantInfoOption'
+    SearchedRestaurantInfo = 'searchedRestaurantInfoList'
+    Reviews = 'reviews'
+    ReviewManager = 'reviewManager'
     KeyUser = 'userData'
     KeyAuth = 'authData'
 
@@ -43,7 +49,11 @@ class UserType:
     Diner = 'diner'
     Owner = 'owner'
 
-
+class ReviewUserType:
+    Diner = 'diner'
+    OwnerOther = 'owner_other'
+    OwnerSame = 'owner_same'
+    
 user_auth_conversion = {
     
 }

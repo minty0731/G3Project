@@ -5,7 +5,12 @@ from dataclasses import dataclass, field
 from typing import List
 from misc.utils import to_camel_case
 from database.geopy_location import GeocodingManager
+from datetime import datetime
+from datetime import date, timedelta as td
 
+"""
+Dataclass for MongoDB
+"""
 @dataclass
 class MongoDeliveryLink:
     """
@@ -14,23 +19,20 @@ class MongoDeliveryLink:
     company: str = ''
     link: str = ''
 
-
-
 @dataclass
 class MongoAddress:
     """
-    Use for delivery
+    Use for address
     """
     address_text: str = ''
     map_latitude: float = 0
     map_longitude: float = 0
-    branch_name: str = ''
-    
+    branch_name: str = '' 
 
 @dataclass
 class MongoRestaurant:
     """
-    Use for inserting into MongoDB
+    Use for restaurant info
     """
     owner_id: str
     name: str
@@ -59,11 +61,10 @@ class MongoRestaurant:
     
     review_manager_id: str = ''
 
-
 @dataclass
 class MongoCategory:
     """
-    Use for inserting into MongoDB
+    Use for category
     """
     shop_id: str = ''
     name: str = ''
@@ -72,7 +73,7 @@ class MongoCategory:
 @dataclass
 class MongoFood:
     """
-    Use for inserting into MongoDB
+    Use for food
     """
     shop_id: str = ''
     category_id: str = ''
@@ -81,11 +82,10 @@ class MongoFood:
     price: float = 0
     image_link: str = ''
 
-
 @dataclass
 class MongoFilteredRestaurant:
     """
-    Use for inserting into MongoDB
+    Use for filteriong option in restaurant
     """
     pure_vegan: bool
     take_away: bool
@@ -96,7 +96,51 @@ class MongoFilteredRestaurant:
     delivery_types: list[str] = field(default_factory=list)
     price_over: int = 0
     price_under: int = 0
+
+@dataclass
+class MongoReviewManager:
+    """
+    Use for managing Reviews
+    """
+    restaurant_id: str   
+    average_rating: float = 0.0
+    total_rating: int = 0
+    total_comment: int = 0
+
+@dataclass
+class MongoReviewRating:
+    """
+    Use for first layer reviews, have rating for them
+    """
+    review_manager_id: str = ''
+    restaurant_id: str = ''
+    user_id: str = ''
+    user_type: str = ''
+    username: str = ''
+    user_image: str = ''
+    date_created: datetime = datetime.now()  # Set default to today's date
+    rating_amount: float = 0.0
+    rating_text: str = ''
+    count_comment: int = 0
+
+@dataclass
+class MongoReviewComment:
+    """
+    Use for second layer reviews, replied to first layer, no rating
+    """
+    review_manager_id: str = ''
+    restaurant_id: str = ''
+    user_id: str = ''
+    user_type: str = ''
+    username: str = ''
+    user_image: str = ''
+    date_created: datetime = datetime.now()
+    rating_id: str = ''
+    comment_text: str = ''
     
+"""
+Converter function from json into dataclass
+"""
 def create_address_data_from_json(json_data: object, geocoding_manager: GeocodingManager) -> MongoAddress:
     address = json_data.get('addressText', '')
     location = geocoding_manager.geocode(address)
@@ -175,3 +219,26 @@ def create_filtered_restaurant_from_json(json_data: object) -> MongoFilteredRest
     )
     return filter
 
+def create_review_rating_from_json(restaurant_id: str, user_id: str, user_type: str, username: str, user_image: str, json_data: object) -> MongoReviewRating:
+    review_rating = MongoReviewRating(
+        restaurant_id=restaurant_id,
+        user_id=user_id,
+        user_type=user_type,
+        username=username,
+        user_image=user_image,
+        rating_amount=json_data.get('ratingAmount', 0.0),
+        rating_text=json_data.get('ratingText', '')
+    )
+    return review_rating
+
+def create_review_comment_from_json(restaurant_id: str, user_id: str, user_type: str, username: str, user_image: str, json_data: object) -> MongoReviewComment:
+    review_comment = MongoReviewComment(
+        restaurant_id=restaurant_id,
+        user_id=user_id,
+        user_type=user_type,
+        username=username,
+        user_image=user_image,
+        rating_id=json_data.get('ratingId', ''),
+        comment_text=json_data.get('commentText', '')
+    )
+    return review_comment

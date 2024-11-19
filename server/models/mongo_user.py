@@ -5,12 +5,14 @@ from dataclasses import dataclass, field
 from typing import List
 from misc.utils import to_camel_case
 
+DEFAULT_USER_PROFILE = 'v1732026156/Website Image/default_user_profile.webp'
+
 @dataclass
 class UserData:
     email: str = ''
     phone_number: str = ''
     full_name: str = ''
-    profile_image_link: str = ''
+    profile_image_link: str = DEFAULT_USER_PROFILE
 
 @dataclass
 class DinerData(UserData):
