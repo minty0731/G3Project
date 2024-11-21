@@ -23,7 +23,9 @@ USER_REPO = UserRepository(DB_MANAGER)
 CLOUDINARY_NAME = 'dzxlzh6hh'
 CLOUDINARY_KEY = '451518431196965'
 CLOUDINARY_SECRET = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
-CLOUDINARY_USER_FOLDER = 'Users'
+CLOUDINARY_FOLDER_USERS = 'Users'
+CLOUDINARY_FOLDER_RESTAURANTS = 'Restaurants'
+CLOUDINARY_FOLDER_FOODS = 'Foods'
 CLOUDINARY_MANAGER = CloudinaryManager(CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET)
 
 def test_create_restaurant(restaurant):
@@ -104,25 +106,102 @@ def create_and_update_review_manager(restaurant_id: str):
     check = RESTAURANT_REPO.update_restaurant_review_manager_id(restaurant_id, review_manager_id)
     return 'Success' if check else 'Failed'
 
-user_id = '671614d2bc0f745bb6a56323'
-owner_id = '671a4afd23928f9f3fc963e4'
-res_id = '6737f9b398d326f7c25b2acb'
-res_id2 = '672d55fa8c65473ddc82a892'
+restaurant_id_list = ['6737f9b398d326f7c25b2acb', '6737f9e898d326f7c25b2ad4', '6737fa4b98d326f7c25b2add', '6737fb5498d326f7c25b2ae6', '673a2c5e865d1f7f0d18be17', '673a2c8e865d1f7f0d18be20', '673a2ccc865d1f7f0d18be29', '673a2cf3865d1f7f0d18be32', '673a2d13865d1f7f0d18be3b']
+test = '6737f9b398d326f7c25b2acb'
+def upload_and_get_image_link(image_path: object, folder:str = '', public_id: str = None) -> str:
+        response = CLOUDINARY_MANAGER.upload_image(image_path, folder, public_id)
+        if response is not None:
+            version = response["version"]
+            public_id = response["public_id"]
+            format = response["format"]
+            return CLOUDINARY_MANAGER.generate_db_link(version, public_id, format)
+        else:
+            return ''
 
+def create_fake_food(image_path: object, food_data: MongoFood):
+    food_id = RESTAURANT_REPO.create_food_db(food_data)
+    if food_id:
+        link = upload_and_get_image_link(image_path, CLOUDINARY_FOLDER_FOODS, f"{food_id}_food_image")
+        RESTAURANT_REPO.update_food_image(food_id, link)
+        print(f"Create food object {food_data.name} ({food_id}) for {food_data.shop_id} succesfully")
+    else:
+        print("Create food fails")
 
-geolocator = Nominatim(user_agent="VEGAN_REVIEW_APP_COS40005")
-location = geolocator.geocode("372/17 Cách mạng tháng 8, P.10, Quận 3, TP.HCM")
-# test_res = RESTAURANT_REPO.get_restaurant_info(res_id)
-# print((location.latitude, location.longitude))
+dict_foods = [
+    #  Main
+    {
+        "food_mongo": MongoFood(name = 'Cơm chiên Paella chay', price= 75000),
+        "food_image": "spain_main_paella.jpg",
+        "food_category": "Món chính"
+    },
+    {
+        "food_mongo": MongoFood(name = 'Súp lạnh Gazpacho chay', price= 75000),
+        "food_image": "spain_main_gazpacho.jpg",
+        "food_category": "Món chính"
+    },
+    {
+        "food_mongo": MongoFood(name = 'Bún Fideua chay', price= 75000),
+        "food_image": "spain_main_fideua.jpg",
+        "food_category": "Món chính"
+    },
+    # Support
+    {
+        "food_mongo": MongoFood(name = 'Migas chay', price= 45000),
+        "food_image": "spain_support_migas.jpg",
+        "food_category": "Món phụ"
+    },
+    {
+        "food_mongo": MongoFood(name = 'Patatas Bravas chay', price= 45000),
+        "food_image": "spain_support_patatas_bravas.jpg",
+        "food_category": "Món phụ"
+    },
+    # Desert
+    {
+        "food_mongo": MongoFood(name = 'Bánh Bruschetta', price= 30000),
+        "food_image": "spain_desert_bruschetta.jpg",
+        "food_category": "Tráng miệng"
+    },
+    {
+        "food_mongo": MongoFood(name = 'Bánh Croquette nhân rau củ', price= 30000),
+        "food_image": "spain_desert_croquette.jpg",
+        "food_category": "Tráng miệng"
+    }
+    # Combo
+    # {
+    #     "food_mongo": MongoFood(name = 'Lẩu kim chi 4 người', price= 300000),
+    #     "food_image": "korea_combo_lau_kim_chi.jpg",
+    #     "food_category": "Combo"
+    # }
+]
 
-review = MongoReviewRating(
-        review_manager_id="rm123",
-        user_id="u456",
-        user_type="customer",
-        user_image="http://example.com/image.jpg",
-        rating_amount=4.5,
-        rating_text="Great service!"
-    )
-restaurant_id_list = ['6736ed3821c22145be2db9ce', '6737f9b398d326f7c25b2acb', '6737f9e898d326f7c25b2ad4', '6737fa4b98d326f7c25b2add', '6737fb5498d326f7c25b2ae6', '673a2c5e865d1f7f0d18be17', '673a2c8e865d1f7f0d18be20', '673a2ccc865d1f7f0d18be29', '673a2cf3865d1f7f0d18be32', '673a2d13865d1f7f0d18be3b']
+def populate_restaurant_foods(restaurant_id: str, dict_foods: list[dict]) -> None:
+    categories = RESTAURANT_REPO.get_restaurant_categories(restaurant_id)
+    for category in categories:
+        for dict_food in dict_foods:
+            if category["name"] == dict_food["food_category"]:
+                category_id = category["categoryId"]
+                food_name = dict_food["food_mongo"].name
+                dict_food["food_mongo"].shop_id = restaurant_id
+                dict_food["food_mongo"].category_id = category_id
+                
+                if dict_food["food_category"] == "Món chính":
+                    dict_food["food_mongo"].description = f"{food_name} ngon đậm đà ko thể cưỡng."
+                if dict_food["food_category"] == "Món phụ":
+                    dict_food["food_mongo"].description = f"{food_name} ngon hơn khi ăn kèm món chính."
+                if dict_food["food_category"] == "Tráng miệng":
+                    dict_food["food_mongo"].description = f"{food_name} để bắt đầu bũa ăn."
+                if dict_food["food_category"] == "Combo":
+                    dict_food["food_mongo"].description = f"{food_name} ngon hơn khi ăn chung nhiều người."
+                
+                create_fake_food(dict_food["food_image"], dict_food["food_mongo"])
 
-CLOUDINARY_MANAGER.upload_image('default_user_profile.png', 'Website Image', 'default_user_profile')
+def print_restaurant(restaurant_id: str) -> None:
+    restaurant = RESTAURANT_REPO.get_restaurant_info(restaurant_id)
+    print(f"Name: {restaurant.name}")
+    print(f"Description: {restaurant.category_description}")
+    print(f"Food Country type: {restaurant.food_country_type}")
+
+print(len(restaurant_id_list))
+print_restaurant(restaurant_id_list[8])
+# populate_restaurant_foods(restaurant_id_list[8], dict_foods)
+print(RESTAURANT_REPO.get_restaurant_foods(restaurant_id_list[8]))

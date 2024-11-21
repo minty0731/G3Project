@@ -203,6 +203,11 @@ def create_food_data_from_json(shop_id: str, json_data: object) -> MongoFood:
         description=json_data.get('description', ''),
         price=json_data.get('price', 0)
     )
+    
+    test_price = food_data.price
+    if isinstance(test_price, str):
+        food_data.price = int(test_price)
+        
     return food_data
 
 def create_filtered_restaurant_from_json(json_data: object) -> MongoFilteredRestaurant:
