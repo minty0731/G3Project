@@ -5,3 +5,4 @@ Flask-Swagger-UI
 pymongo
 cloudinary
 geopy
+python-dotenv

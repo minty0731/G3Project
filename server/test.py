@@ -10,23 +10,32 @@ from database.db_user import UserRepository
 from database.cloudinary_image import CloudinaryManager
 import random
 from geopy.geocoders import Nominatim
+import os
+from dotenv import load_dotenv, dotenv_values
 
-actual_id ='67162174f9b8ff18eda6aaaf'
+ # Load environment variables from the .env file
+load_dotenv() 
 
-MY_URI = "mongodb+srv://dolongduy:vegan1234@test.ussqay0.mongodb.net/?retryWrites=true&w=majority&appName=Test"
-DB_NAME = "vegan"
-DB_MANAGER = DatabaseManager(MY_URI, DB_NAME)
-RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
-USER_REPO = UserRepository(DB_MANAGER)
+# MongoDB connection
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME")
+DB_MANAGER = DatabaseManager(MONGO_URI, DB_NAME)
 
 # Cloudinary manager
-CLOUDINARY_NAME = 'dzxlzh6hh'
-CLOUDINARY_KEY = '451518431196965'
-CLOUDINARY_SECRET = 'PDYOYg1BaYJrPY616mK6zlh9lA4'
-CLOUDINARY_FOLDER_USERS = 'Users'
-CLOUDINARY_FOLDER_RESTAURANTS = 'Restaurants'
-CLOUDINARY_FOLDER_FOODS = 'Foods'
+CLOUDINARY_NAME = os.getenv("CLOUDINARY_NAME")
+CLOUDINARY_KEY = os.getenv("CLOUDINARY_KEY")
+CLOUDINARY_SECRET = os.getenv("CLOUDINARY_SECRET")
+CLOUDINARY_FOLDER_USERS = os.getenv("CLOUDINARY_FOLDER_USERS")
+CLOUDINARY_FOLDER_RESTAURANTS = os.getenv("CLOUDINARY_FOLDER_RESTAURANTS")
+CLOUDINARY_FOLDER_FOODS = os.getenv("CLOUDINARY_FOLDER_FOODS")
 CLOUDINARY_MANAGER = CloudinaryManager(CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET)
+
+# Geocode manager
+JWT_TOKEN_SECRET = os.getenv("JWT_TOKEN_SECRET")
+GEOCODER_USER_AGENT = os.getenv("GEOCODER_USER_AGENT")
+
+USER_REPO = UserRepository(DB_MANAGER)
+RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
 
 def test_create_restaurant(restaurant):
     return RESTAURANT_REPO.create_restaurant_db(restaurant)
@@ -201,7 +210,7 @@ def print_restaurant(restaurant_id: str) -> None:
     print(f"Description: {restaurant.category_description}")
     print(f"Food Country type: {restaurant.food_country_type}")
 
-print(len(restaurant_id_list))
-print_restaurant(restaurant_id_list[8])
-# populate_restaurant_foods(restaurant_id_list[8], dict_foods)
-print(RESTAURANT_REPO.get_restaurant_foods(restaurant_id_list[8]))
+sss = [MONGO_URI, DB_NAME, CLOUDINARY_KEY, CLOUDINARY_NAME, CLOUDINARY_SECRET, CLOUDINARY_FOLDER_USERS, CLOUDINARY_FOLDER_FOODS, CLOUDINARY_FOLDER_RESTAURANTS, GEOCODER_USER_AGENT, JWT_TOKEN_SECRET]
+
+for item in sss:
+    print(item)
