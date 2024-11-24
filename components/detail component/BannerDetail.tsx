@@ -1,43 +1,43 @@
 "use client";
-import React, { useState } from 'react';
-import ImageLoader from '../ImageLoader';
-import { useKeenSlider } from 'keen-slider/react';
-import 'keen-slider/keen-slider.min.css';
+import React, { useState, useEffect } from "react";
+import ImageLoader from "../ImageLoader";
+import { useKeenSlider } from "keen-slider/react";
+import "keen-slider/keen-slider.min.css";
 
-const bannerImg = [
-    {
-        src: "v1718791452/samples/food/dessert.jpg",
-        alt: "Image 1",
-    },
-    {
-        src: "v1718791482/samples/coffee.jpg",
-        alt: "Image 2",
-    },
-    {
-        src: "v1718791483/samples/dessert-on-a-plate.jpg",
-        alt: "Image 3",
-    },
-    {
-        src: "v1718791486/cld-sample-4.jpg",
-        alt: "Image 4",
-    },
-    {
-        src: "v1718791476/samples/balloons.jpg",
-        alt: "Image 5",
-    },
-];
+interface BannerDetailProps {
+    bannerCollection: string[];
+}
 
-const BannerDetail: React.FC = () => {
-    const [mainImage, setMainImage] = useState(bannerImg[0]);
+const BannerDetail: React.FC<BannerDetailProps> = ({ bannerCollection }) => {
+    const [mainImage, setMainImage] = useState(bannerCollection[0]);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    // Preload all images to avoid delay when switching
+    useEffect(() => {
+        bannerCollection.forEach((image) => {
+            const img = new Image();
+            img.src = image;
+        });
+    }, [bannerCollection]);
+
+    // Ensure at least 4 thumbnails are displayed
+    const imagesToDisplay = bannerCollection.length >= 4
+        ? bannerCollection
+        : [...bannerCollection, ...Array(4 - bannerCollection.length).fill("v1719926754/vegan-category_rkxsoh.png")];
+
     const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
+        loop: true,
         slides: {
             perView: 4,
             spacing: 16,
         },
     });
 
-    const handleThumbnailClick = (image: { src: string; alt: string }) => {
-        setMainImage(image);
+    const handleThumbnailClick = (image: string, index: number) => {
+        if (mainImage !== image) {
+            setMainImage(image);
+            setSelectedIndex(index);
+        }
     };
 
     const handlePrevClick = () => {
@@ -54,10 +54,16 @@ const BannerDetail: React.FC = () => {
 
     return (
         <div className="flex flex-col">
-            <div className="mb-4 w-full max-w-[600px]">
+            {/* Main Image with fade transition */}
+            <div
+                className="mb-4 w-full max-w-[600px] transition-opacity duration-300 ease-in-out"
+                style={{
+                    opacity: 1, // Keeps it fully visible during transition
+                }}
+            >
                 <ImageLoader
-                    path={mainImage.src}
-                    alt={mainImage.alt}
+                    path={mainImage}
+                    alt="Banner Image"
                     height={500}
                     width={700}
                     className="rounded-md"
@@ -69,25 +75,32 @@ const BannerDetail: React.FC = () => {
                     }}
                 />
             </div>
+
+            {/* Thumbnails */}
             <div className="relative w-full max-w-[600px]">
                 <button
                     onClick={handlePrevClick}
                     className="absolute left-0 z-10 bg-custom-green-light text-black p-2"
-                    style={{ top: '50%', transform: 'translateY(-50%)' }}
+                    style={{ top: "50%", transform: "translateY(-50%)" }}
                 >
                     &#10094;
                 </button>
                 <div ref={sliderRef} className="keen-slider w-full">
-                    {bannerImg.map((image, index) => (
-                        <div className="keen-slider__slide flex items-center justify-center w-1/4">
+                    {imagesToDisplay.map((image, index) => (
+                        <div
+                            key={index}
+                            className="keen-slider__slide flex items-center justify-center w-1/4"
+                        >
                             <div
-                                key={index}
-                                className={`relative ${mainImage.src === image.src ? 'rounded-md border-spacing-0 border-4 border-green-500' : ''}`}
-                                onClick={() => handleThumbnailClick(image)}
+                                onClick={() => handleThumbnailClick(image, index)}
+                                className={`cursor-pointer ${selectedIndex === index
+                                    ? "rounded-md border-spacing-0 border-4 border-green-500"
+                                    : ""
+                                    }`}
                             >
                                 <ImageLoader
-                                    path={image.src}
-                                    alt={image.alt}
+                                    path={image}
+                                    alt="Thumbnail Image"
                                     height={150}
                                     width={150}
                                     className="rounded-md"
@@ -105,7 +118,7 @@ const BannerDetail: React.FC = () => {
                 <button
                     onClick={handleNextClick}
                     className="absolute right-0 z-10 bg-custom-green-light text-black p-2"
-                    style={{ top: '50%', transform: 'translateY(-50%)' }}
+                    style={{ top: "50%", transform: "translateY(-50%)" }}
                 >
                     &#10095;
                 </button>

@@ -7,7 +7,7 @@ interface StoreProp {
     store: StoreData
 
 }
-const Store: React.FC<StoreProp> = ({ store }) => {
+const StoreTest: React.FC<StoreProp> = ({ store }) => {
     return (
         <div className="flex flex-col items-center justify-center hover: cursor-pointer">
             <div className="relative flex justify-center items-center">
@@ -60,4 +60,4 @@ const Store: React.FC<StoreProp> = ({ store }) => {
     );
 };
 
-export default Store
+export default StoreTest

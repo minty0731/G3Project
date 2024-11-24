@@ -1,16 +1,19 @@
 import React from 'react'
 import ImageLoader from '../ImageLoader';
-import { MenuInfo } from '@/container/MenuConstant';
+import { MenuData } from '@/container/RestaurantData'
 interface MenuProp {
-    menu: MenuInfo
+    menu: MenuData
 
 }
 const Menu: React.FC<MenuProp> = ({ menu }) => {
+    const formatNumber = (num: number): string => {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
     return (
-        <div className="flex flex-col items-center justify-center hover: cursor-pointer">
+        <div className="flex flex-col items-center justify-center hover: cursor-pointer tooltip" data-tip={menu.description}>
             <div className="relative flex justify-center items-center">
                 <ImageLoader
-                    path={menu.item_image}
+                    path={menu.imageLink}
                     alt="item"
                     width={200}
                     height={200}
@@ -23,9 +26,9 @@ const Menu: React.FC<MenuProp> = ({ menu }) => {
                     }}
                 />
             </div>
-            <div className="flex flex-col items-center mt-4">
-                <h3 className="text-md">{menu.item_name}</h3>
-                <h3 className="text-md">{menu.price}.000đ</h3>
+            <div className="flex flex-col items-center mt-4 tooltip" data-tip={`${menu.description}`}>
+                <h3 className="text-md">{menu.name}</h3>
+                <h3 className="text-md">{formatNumber(Number(menu.price))}</h3>
             </div>
         </div>
     );

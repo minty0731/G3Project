@@ -5,7 +5,6 @@ const nextConfig = {
     },
     images: {
     domains: ["res.cloudinary.com"],
-    domains: ["fakestoreapi.com"],
 
   },
 };

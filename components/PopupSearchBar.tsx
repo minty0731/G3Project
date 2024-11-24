@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoIosCloseCircle } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
-
+import { useRouter } from 'next/navigation';
 interface PopupSearchBarProps {
     onClose: () => void;  // Function to close the search bar
 }
@@ -9,9 +9,12 @@ interface PopupSearchBarProps {
 export const PopupSearchBar: React.FC<PopupSearchBarProps> = ({ onClose }) => {
     const popupRef = useRef<HTMLDivElement | null>(null); // Reference to the popup container
     const [searchString, setSearchString] = useState<string>('')
+    const router = useRouter()
     const runConsole = () => {
-        alert(searchString)
-    }
+        if (searchString.trim() !== '') {
+            router.push(`/store?query=${encodeURIComponent(searchString)}`); // Navigate to storepage with the search string in the query
+        }
+    };
     useEffect(() => {
         // Function to handle clicks outside the popup
         const handleClickOutside = (event: MouseEvent) => {

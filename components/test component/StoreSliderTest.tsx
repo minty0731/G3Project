@@ -7,9 +7,9 @@ import { useKeenSlider } from "keen-slider/react";
 import { GrNext } from "react-icons/gr";
 import { StoreData } from "@/container/RestaurantData";
 import { getRestaurantHome } from "@/container/RestaurantAPI";
-import Store from "./Store";
+import StoreTest from "./StoreTest";
 
-const StoreSlider: React.FC = () => {
+const StoreSliderTest: React.FC = () => {
     const [storeList, setStoreList] = useState<StoreData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
@@ -23,7 +23,7 @@ const StoreSlider: React.FC = () => {
     useEffect(() => {
         const fetchRestaurant = async () => {
             try {
-                const data = await getRestaurantHome(1, 6); // Wait for the API response
+                const data = await getRestaurantHome(1, 10); // Wait for the API response
                 setStoreList(data); // Set the store list
                 setIsLoading(false); // Set loading to false after data is fetched
             } catch (error) {
@@ -53,7 +53,7 @@ const StoreSlider: React.FC = () => {
                 {storeList.map((store, index) => (
                     <div key={index} className="keen-slider__slide">
                         <Link key={store.restaurantId} href={`/store/${store.restaurantId}`}>
-                            <Store store={store} />
+                            <StoreTest store={store} />
                         </Link>
                     </div>
                 ))}
@@ -68,4 +68,4 @@ const StoreSlider: React.FC = () => {
     );
 };
 
-export default StoreSlider;
+export default StoreSliderTest;

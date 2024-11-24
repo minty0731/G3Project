@@ -3,15 +3,21 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Store from '@/components/Store';
 import Sidebar from '@/components/Sidebar';
-import { StoreInfo } from '@/container/StoreConstant';
-import { link } from 'fs';
+import { getRestaurantHome, getSearchRestaurant } from '@/container/RestaurantAPI';
+import { StoreData } from '@/container/RestaurantData';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const StorePage: React.FC = () => {
-    const [products, setProducts] = useState<StoreInfo[]>([]);
+    const [storeList, setStoreList] = useState<StoreData[]>([]);
+
+
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const searchParams = useSearchParams(); // Get query parameters
+    const query = searchParams.get('query'); // Get the 'query' parameter
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
@@ -23,22 +29,34 @@ const StorePage: React.FC = () => {
     };
 
     useEffect(() => {
-        fetch('http://localhost:5000/product')
-            .then(res => res.json())
-            .then(data => {
-                setProducts(data.products);
-            })
-            .catch(error => console.error('Error fetching products:', error));
-    }, []);
+        const fetchRestaurants = async () => {
+            if (query) {
+                // Fetch search results when there's a query
+                console.log('Fetching results for:', query);
+                const searchData = await getSearchRestaurant(query);
+                setStoreList(searchData || []);
+            } else {
+                // Fetch default restaurants when no query
+                console.log('Fetching default restaurants');
+                const data = await getRestaurantHome(1, 20);
+                setStoreList(data || []);
+            }
+        };
+        fetchRestaurants();
+    }, [query]);
 
-
-    const totalPages = Math.ceil(products.length / itemsPerPage);
+    const handleApplyFilter = (filters: any) => {
+        setStoreList(filters); // Update filtered data
+        setCurrentPage(1); // Reset to the first page
+        toggleSidebar()
+    };
+    const totalPages = Math.ceil((storeList?.length || 0) / itemsPerPage);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
-    const currentItems = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const currentItems = storeList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="flex flex-col items-center justify-center px-24 py-12 w-full">
@@ -48,7 +66,7 @@ const StorePage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 w-full px-16">
                 {currentItems.map((item) => (
-                    <Link key={item.id} href={`/store/${item.id}`}>
+                    <Link key={item.restaurantId} href={`/store/${item.restaurantId}`}>
                         <Store store={item} />
                     </Link>
                 ))}
@@ -66,7 +84,7 @@ const StorePage: React.FC = () => {
                     ))}
                 </div>
             </div>
-            <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+            <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} applyFilter={handleApplyFilter} />
             {sidebarOpen && (
                 <div
                     onClick={toggleSidebar}

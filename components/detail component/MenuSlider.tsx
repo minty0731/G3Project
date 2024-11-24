@@ -5,10 +5,13 @@ import Menu from "./Menu";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 import { GrNext } from "react-icons/gr";
-import { MenuInfo } from "@/container/MenuConstant";
-
-const MenuSlider: React.FC = () => {
-    const [products, setProducts] = useState<MenuInfo[]>([]);
+import { MenuData } from "@/container/RestaurantData";
+import { getFoods } from "@/container/RestaurantAPI";
+interface MenuSliderProps {
+    restaurantId: string;
+}
+const MenuSlider: React.FC<MenuSliderProps> = ({ restaurantId }) => {
+    const [food, setFood] = useState<MenuData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
         loop: true,
@@ -19,16 +22,15 @@ const MenuSlider: React.FC = () => {
         },
     });
     useEffect(() => {
-        fetch('http://localhost:5000/menu')
-            .then(res => res.json())
-            .then(data => {
-                setProducts(data.menus);
-                setIsLoading(false);
-                if (instanceRef.current) {
-                    instanceRef.current.update();
-                }
-            })
-            .catch(error => console.error('Error fetching products:', error));
+        const fetchFoods = async () => {
+            const foods = await getFoods(restaurantId);
+            setFood(foods);
+            setIsLoading(false);
+            if (instanceRef.current) {
+                instanceRef.current.update();
+            }
+        }
+        fetchFoods();
     }, []); // Adding an empty dependency array to run the effect only once
     if (isLoading) {
         return (
@@ -47,7 +49,7 @@ const MenuSlider: React.FC = () => {
                 <GrNext className="text-4xl rotate-180" />
             </button>
             <div ref={sliderRef} className="keen-slider flex-1 mx-4">
-                {products.map((items, index) => (
+                {food?.map((items, index) => (
                     <div key={index} className="keen-slider__slide">
                         <Menu menu={items} />
                     </div>

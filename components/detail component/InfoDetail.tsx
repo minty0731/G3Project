@@ -1,22 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import ImageLoader from '../ImageLoader';
-
+import { StoreData } from '@/container/RestaurantData';
 interface InfoDetail {
-    store_name: string;
-    certificate: string;
-    category: string;
-    phone_number: string;
-    address: string;
-    price_range: string;
-    open_hours: string;
-    payment_method: string;
-    delivery: string;
+    storeData: StoreData;
 }
 
-const InfoDetailComponent: React.FC = () => {
+const InfoDetailComponent: React.FC<InfoDetail> = ({ storeData }) => {
     const [data, setData] = useState<InfoDetail | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
     const titles = [
         'Tên cửa hàng',
@@ -30,43 +20,17 @@ const InfoDetailComponent: React.FC = () => {
         'Dịch vụ giao hàng',
     ];
 
-    useEffect(() => {
-        fetch('http://localhost:5000/infoDetail')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return res.json();
-            })
-            .then(data => {
-                setData(data.infoDetail[0]);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError(error.message);
-                setLoading(false);
-            });
-    }, []);
-
-    const dataValues = data ? [
-        data.store_name,
-        data.certificate,
-        data.category,
-        data.phone_number,
-        data.address,
-        data.price_range,
-        data.open_hours,
-        data.payment_method,
-        data.delivery,
-    ] : [];
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const dataValues = [
+        storeData.name,
+        storeData.pureVegan ? 'Có' : 'Không',
+        storeData.categoryDescription,
+        storeData.phoneNumber,
+        storeData.addressCollection.map((address) => address.addressText).join(', '),
+        `${storeData.lowestPrice} - ${storeData.highestPrice}`,
+        storeData.openDays + ' ' + storeData.openHours,
+        storeData.paymentMethod.join(', '),
+        storeData.deliveryCollection.map((delivery) => delivery.company).join(', '),
+    ]
 
     return (
         <div className="flex gap-4 border-t border-b p-4">

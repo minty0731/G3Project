@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
-    console.log(token)
+    //console.log(token)
     if (!token) {
         // If no token is found, redirect to the login page
         return NextResponse.redirect(new URL('/', request.url));

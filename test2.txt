@@ -1,130 +1,183 @@
+"use client";
 import React, { useState, useEffect } from 'react';
-import { IoMdCloseCircleOutline } from "react-icons/io";
-
-interface Filter {
-    name: string;
-    checked: boolean; // Track checked status
-}
-
-interface Category {
-    name: string;
-    filters: Filter[];
-}
-
-interface SidebarProp {
-    isOpen: boolean;
-    toggleSidebar: () => void;
-    categories: Category[];
-}
-
-const Sidebar: React.FC<SidebarProp> = ({ isOpen, toggleSidebar, categories = [] }) => {
-    const [updatedCategories, setUpdatedCategories] = useState<Category[]>(categories);
-    const [priceRange, setPriceRange] = useState<{ min: number | string; max: number | string }>({
-        min: '',
-        max: ''
-    });
-
+import { FcGoogle } from "react-icons/fc";
+import EditProfile from '@/components/EditProfile';
+import { getUserData, getAuth2, updateUser, updateAuth } from '@/container/RestaurantAPI';
+import { userData } from '@/container/RestaurantData';
+import ImageLoader from '@/components/ImageLoader';
+const ProfilePage: React.FC = () => {
+    const [userType, setUserType] = useState('diner');
+    const [fullName, setFullname] = useState("");
+    const [email, setEmail] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [username, setUsername] = useState("");
+    const [address, setAddresses] = useState("A35, Bạch Đằng, Quận Tân Bình, TP. Hồ Chí Minh");
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [editingField, setEditingField] = useState('');
+    const [popupTitle, setPopupTitle] = useState('');
+    const [currentValue, setCurrentValue] = useState('');
+    const [userData, setUserData] = useState<userData>()
+    // Fetch user data
     useEffect(() => {
-        setUpdatedCategories(categories);
-    }, [categories]);
+        const fetchUserData = async () => {
+            try {
+                const info = await getUserData();
+                const user = await getAuth2();
+                setUsername(user);
+                setUserData(info);
+            } catch (error) {
+                console.error("Failed to fetch user data", error);
+            }
+        };
+        fetchUserData();
+    }, []);
 
-    // Handle filter change
-    const handleFilterChange = (categoryIndex: number, filterIndex: number) => {
-        const newCategories = [...updatedCategories];
-        newCategories[categoryIndex].filters[filterIndex].checked = !newCategories[categoryIndex].filters[filterIndex].checked;
-        setUpdatedCategories(newCategories);
+    // Open popup for editing
+    const openPopup = (field: string, value: string, title: string) => {
+        setEditingField(field);
+        setCurrentValue(value);
+        setPopupTitle(title);
+        setIsPopupOpen(true);
     };
 
-    // Reset filters and close sidebar
-    const resetFiltersAndClose = () => {
-        const newCategories = updatedCategories.map(category => ({
-            ...category,
-            filters: category.filters.map(filter => ({
-                ...filter,
-                checked: false
-            }))
-        }));
-        setUpdatedCategories(newCategories);
-        setPriceRange({ min: '', max: '' });  // Reset price range
-        toggleSidebar();
+
+
+    // Save changes
+    const saveField = async (newValue: string) => {
+        try {
+            let updatedData: { [key: string]: string } | null = null; // Data for updateUser API
+            let updateAuthen: { [key: string]: string } | null = null; // Data for updateAuth API
+
+            // Handle user fields
+            if (editingField === 'fullName') {
+                setFullname(newValue);
+                updatedData = { fullName: newValue };
+            } else if (editingField === 'email') {
+                setEmail(newValue);
+                updatedData = { email: newValue };
+            } else if (editingField === 'phoneNumber') {
+                setPhoneNumber(newValue);
+                updatedData = { phoneNumber: newValue };
+            } else if (editingField === 'address') {
+                setAddresses(newValue);
+                updatedData = { address: newValue };
+            }
+
+            // Handle authentication fields
+            if (editingField === 'username') {
+                setUsername(newValue);
+                updateAuthen = { username: newValue };
+            }
+
+            // Include userType if it exists
+            if (userType) {
+                if (updatedData) {
+                    updatedData.userType = userType;
+                }
+                if (updateAuthen) {
+                    updateAuthen.userType = userType;
+                }
+            }
+
+            // Perform updates
+            if (updateAuthen) {
+                await updateAuth(updateAuthen); // Call the updateAuth API
+            }
+            if (updatedData) {
+                await updateUser(updatedData); // Call the updateUser API
+            }
+
+            console.log("User data updated successfully");
+        } catch (error) {
+            console.error("Failed to update user data", error);
+        }
     };
 
-    // Alert checked filters and then reset filters and close sidebar
-    const handleData = () => {
-        const checkedFilters = updatedCategories.flatMap((category) =>
-            category.filters
-                .filter(filter => filter.checked)
-                .map(filter => `${filter.name}`)
-        ).join('\n');
-
-        alert(`${checkedFilters}\nPrice Range: ${priceRange.min} - ${priceRange.max}` || "No filters selected.");
-        resetFiltersAndClose();
-    };
-
-    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'min' | 'max') => {
-        const value = e.target.value;
-        setPriceRange(prevState => ({
-            ...prevState,
-            [type]: value
-        }));
-    };
 
     return (
-        <div
-            className={`fixed top-0 right-0 h-screen w-80 bg-white shadow-md transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'} z-[60]`}
-        >
-            <div className="fixed top-0 w-full bg-[#2B2F4C] p-4 text-white flex items-center justify-between h-20">
-                <h3 className="text-lg">Bộ lọc</h3>
-                <IoMdCloseCircleOutline onClick={toggleSidebar} className="text-2xl hover:cursor-pointer" />
+        <div className="flex flex-col items-center justify-center h-full w-full">
+            <div className="flex items-start w-full text-xl font-bold mb-5">
+                <h3>Thông tin cá nhân</h3>
             </div>
-            <div className="flex flex-col mt-20 p-4 overflow-y-auto h-[calc(100%-5rem)]">
-                {/* Price Range Inputs */}
-                <div className="flex flex-col gap-3 mb-5">
-                    <label className="text-md font-semibold">Price Range</label>
-                    <div className="flex gap-4">
-                        <div className="w-full">
-                            <input
-                                type="number"
-                                value={priceRange.min}
-                                onChange={(e) => handlePriceChange(e, 'min')}
-                                className="input input-bordered w-full"
-                                placeholder="Giá thấp"
-                            />
-                        </div>
-                        <div className="w-full">
-                            <input
-                                type="number"
-                                value={priceRange.max}
-                                onChange={(e) => handlePriceChange(e, 'max')}
-                                className="input input-bordered w-full"
-                                placeholder="Giá cao"
-                            />
+            <div className="flex flex-col h-full w-full border rounded-md border-black bg-white">
+                <div className="flex items-start justify-between border-b border-black w-full pb-4 p-6">
+                    <div className="flex flex-col items-center gap-2">
+                        <h3 className="font-bold">Ảnh đại diện</h3>
+                        <div className="avatar">
+                            <div className="w-24 rounded-full">
+                                <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="avatar" />
+                            </div>
                         </div>
                     </div>
+                    <h5 className="hover:text-red-600 cursor-pointer">Sửa</h5>
                 </div>
+                <div className="flex items-start justify-between border-b border-black w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Họ và tên</h3>
+                        <h3>{userData?.fullName}</h3>
+                    </div>
+                    <h5 onClick={() => openPopup('fullName', fullName, 'Họ và tên')} className="hover:text-red-600 cursor-pointer">Sửa</h5>
+                </div>
+                <div className="flex items-start justify-between border-b border-black w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Email</h3>
+                        <h3>{userData?.email}</h3>
+                    </div>
+                    <h5 onClick={() => openPopup('email', email, 'Email')} className="hover:text-red-600 cursor-pointer">Sửa</h5>
+                </div>
+                <div className="flex items-start justify-between border-b border-black w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Số điện thoại</h3>
+                        <h3>{userData?.phoneNumber}</h3>
+                    </div>
+                    <h5 onClick={() => openPopup('phoneNumber', phoneNumber, 'Số điện thoại')} className="hover:text-red-600 cursor-pointer">Sửa</h5>
+                </div>
+                <div className="flex items-start justify-between w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Địa chỉ</h3>
+                        <h3>{address}</h3>
+                    </div>
+                    <h5 onClick={() => openPopup('address', address, 'Địa chỉ')} className="hover:text-red-600 cursor-pointer">Sửa</h5>
+                </div>
+            </div>
+            <div className="flex items-start w-full text-xl font-bold mb-5 mt-14">
+                <h3>Tài khoản bảo mật</h3>
+            </div>
+            <div className="flex flex-col h-full w-full border rounded-md border-black bg-white">
+                <div className="flex items-start justify-between border-b border-black w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Tên Tài Khoản</h3>
+                        <h3>{username}</h3>
+                    </div>
+                    <h5 onClick={() => openPopup('username', username, 'Tên Tài Khoản')} className="hover:text-red-600 cursor-pointer">Sửa</h5>
+                </div>
+                <div className="flex items-start justify-between border-b border-black w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Mật Khẩu</h3>
+                        <h3>••••••••••••••••••••</h3>
+                    </div>
+                    <h5 onClick={() => openPopup('password', '', 'Mật Khẩu')} className="hover:text-red-600 cursor-pointer">Sửa</h5>
+                </div>
+                <div className="flex items-start justify-between w-full pb-4 p-6">
+                    <div className="flex flex-col items-start">
+                        <h3 className="font-bold">Liên kết với Google</h3>
+                    </div>
+                    <button className="btn py-2 border-2 border-gray-400 text-black bg-white flex items-center gap-2">
+                        <FcGoogle className="text-3xl" /> Đăng nhập bằng Google
+                    </button>
+                </div>
+            </div>
 
-                {updatedCategories.map((category, categoryIndex) => (
-                    <div key={categoryIndex} className="flex flex-col w-full mt-2 py-3 px-4 gap-2">
-                        <h1 className="bg-custom-green text-white p-3 rounded-md">{category.name}</h1>
-                        {category.filters.map((filter, filterIndex) => (
-                            <label key={filterIndex} className="flex items-center justify-start gap-4 cursor-pointer p-2 rounded-md">
-                                <input
-                                    type="checkbox"
-                                    checked={filter.checked}
-                                    onChange={() => handleFilterChange(categoryIndex, filterIndex)}
-                                    className="checkbox"
-                                />
-                                <span className="text-md">{filter.name}</span>
-                            </label>
-                        ))}
-                    </div>
-                ))}
-                <div className="flex items-center justify-center mt-5">
-                    <button className="btn btn-wide bg-[#2B2F4C] text-white hover:bg-gray-700 mt-10" onClick={handleData}>Lọc cửa hàng</button>
-                </div>
-            </div>
+            {isPopupOpen && (
+                <EditProfile
+                    title={`Sửa ${popupTitle}`}
+                    currentValue={currentValue}
+                    onSave={saveField}
+                    onClose={() => setIsPopupOpen(false)}
+                />
+            )}
         </div>
     );
 };
 
-export default Sidebar;
+export default ProfilePage;
