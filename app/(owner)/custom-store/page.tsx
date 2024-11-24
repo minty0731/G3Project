@@ -13,7 +13,8 @@ const CustomStorePage = () => {
     const [countryFlag, setCountryFlag] = useState<string>("");
     const [categoryDesc, setCategoryDesc] = useState<string>()
     const [branches, setBranches] = useState<number>(1);
-    const [addresses, setAddresses] = useState([{ address_text: "", map_location: "", branch_name: "" }]); const [hours, setHours] = useState<string>("");
+    const [addresses, setAddresses] = useState([{ addressText: "", branchName: "" }]);
+    const [hours, setHours] = useState<string>("");
     const [openDays, setOpenDays] = useState<string>("");
     const [highPrice, setHighPrice] = useState<string>("");
     const [lowPrice, setLowPrice] = useState<string>("");
@@ -40,8 +41,7 @@ const CustomStorePage = () => {
         newAddresses[index] = {
             ...newAddresses[index],
             [field]: value,
-            map_location: "",  // Always set map_location as empty
-            branch_name: ""    // Always set branch_name as empty
+            branchName: ""    // Always set branch_name as empty
         }
         setAddresses(newAddresses);
     };
@@ -160,8 +160,8 @@ const CustomStorePage = () => {
                             <input
                                 key={index}
                                 type="text"
-                                value={addresses[index]?.address_text || ""}
-                                onChange={(e) => handleAddressChange(index, "address_text", e.target.value)}
+                                value={addresses[index]?.addressText || ""}
+                                onChange={(e) => handleAddressChange(index, "addressText", e.target.value)}
                                 className="w-full p-2 border rounded mt-2"
                                 placeholder={`Địa chỉ chi nhánh ${index + 1}`}
                             />

@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { vegan } from '@/constant/ImageConstant';
 import { IoIosNotificationsOutline } from "react-icons/io";
-
+import Cookies from 'js-cookie';
 const Navbar: React.FC = () => {
   const router = useRouter()
   const logout = () => {
+    Cookies.remove('token')
     router.push("/login")
   }
   return (

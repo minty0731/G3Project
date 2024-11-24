@@ -13,7 +13,7 @@ const Sidebar = () => {
         { href: "/product-management", label: "Quản lý sản phẩm" },
         { href: "/add-new-product", label: "Thêm sản phẩm" },
         { href: "/review-management", label: "Quản lý đánh giá" },
-        { href: "/notifications", label: "Thông báo" }
+        { href: "/notify", label: "Thông báo" }
     ];
 
     return (

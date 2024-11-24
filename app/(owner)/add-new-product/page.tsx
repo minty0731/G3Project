@@ -1,17 +1,26 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AiOutlineCloudUpload } from 'react-icons/ai';
+import { getCategoryList, createFood, getFood, } from '@/constant/RestaurantAPI';
+
+
+interface CategoryProp {
+    categoryId: string,
+    name: string,
+    totalFoodAmount: number,
+}
 const AddNewProductPage = () => {
-    const [category, setCategory] = useState<string>("");
+    const [category, setCategory] = useState<CategoryProp[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>("")
     const [foodImage, setFoodImage] = useState<string | null>(null);
     const [foodName, setFoodName] = useState<string>('');
     const [foodDescription, setFoodDescription] = useState<string>('');
-    const [foodPrice, setFoodPrice] = useState<number>(0);
+    const [foodPrice, setFoodPrice] = useState<string>("");
 
     const [reload, setReload] = useState(false);
 
-    const categoryData = ["Món chính", "Món phụ", "Tráng miệng", "Đồ uống", "Đặc biệt", "Combo"];
-    const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // convert image to base64 and set into foodImage
+    const handleFoodImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -23,23 +32,33 @@ const AddNewProductPage = () => {
     };
     const handleAddNewProduct = () => {
         const data = {
-            category,
-            foodImage,
-            foodName,
-            foodDescription,
-            foodPrice
+            categoryId: selectedCategory,
+            name: foodName,
+            description: foodDescription,
+            price: foodPrice,
+            imageLink: foodImage,
         }
         console.log(data);
-        alert("Thêm sản phẩm thành công");
+        createFood(data)
+
     }
     const resetData = () => {
         setReload(!reload);
-        setCategory("");
+        setSelectedCategory("")
         setFoodImage(null);
         setFoodName("");
         setFoodDescription("");
-        setFoodPrice(0);
+        setFoodPrice("");
     }
+    // fetching category list for user to select
+    useEffect(() => {
+        const saveCategoryList = async () => {
+            setCategory(await getCategoryList())
+            console.log(getCategoryList())
+        }
+        saveCategoryList()
+    }, []);
+
     return (
         <div>
             <div className="h-full w-full bg-white shadow-lg rounded-2xl p-6" key={reload ? 'reload-true' : 'reload-false'}>
@@ -48,12 +67,12 @@ const AddNewProductPage = () => {
                     <label className="font-semibold">Loại sản phẩm</label>
                     <select
                         className="p-2 border rounded"
-                        onChange={(e) => setCategory(e.target.value)}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
                         defaultValue=""
                     >
                         <option value="" disabled>Chọn loại sản phẩm</option>
-                        {categoryData.map((category) => (
-                            <option key={category} value={category} >{category}</option>
+                        {category.map((category) => (
+                            <option key={category.categoryId} value={category.categoryId} >{category.name}</option>
                         ))}
                     </select>
                 </div>
@@ -67,7 +86,7 @@ const AddNewProductPage = () => {
                 </div>
                 <div className="flex flex-col gap-4 mt-4">
                     <label className="font-semibold">Giá sản phẩm</label>
-                    <input type="number" className="p-2 border rounded" placeholder="Nhập giá sản phẩm" onChange={(e) => setFoodPrice(parseFloat(e.target.value))} />
+                    <input type="number" className="p-2 border rounded" placeholder="Nhập giá sản phẩm" onChange={(e) => setFoodPrice(e.target.value)} />
                 </div>
                 <div className="flex flex-col gap-4 mt-4 w-full">
                     <label className="font-semibold">Ảnh sản phẩm</label>
@@ -76,7 +95,7 @@ const AddNewProductPage = () => {
                             <input
                                 type="file"
                                 accept=".jpg,.jpeg,.png"
-                                onChange={handleProfileImageChange}
+                                onChange={handleFoodImageChange}
                                 className="absolute inset-0 opacity-0 cursor-pointer"
                             />
                             {foodImage ? (

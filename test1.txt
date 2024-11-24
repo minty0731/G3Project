@@ -1,52 +1,7 @@
-import type { Config } from "tailwindcss";
 
-const config: Config = {
-  content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-      },
-      screens: {
-        'tablet': '640px',
-        // => @media (min-width: 640px) { ... }
-  
-        'laptop': '1024px',
-        // => @media (min-width: 1024px) { ... }
-  
-        'desktop': '1280px',
-        // => @media (min-width: 1280px) { ... }
-      },
-    },
-  },
-  plugins: [],
-};
-export default config;
 
-// in case error in custom store api
-   /*
-        const token = Cookies.get('token')
-        if (token) {
-            const resID = await getRestaurantID(token)
-            const response = await fetch(`http://127.0.0.1:8080/api/restaurant/${resID}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data.message)
-                alert(data.message)
-            } else {
-                console.error('Error fetching data');
-            }
-        }*/
+           const handleLinkChange = (index: number, field: keyof DeliveryLink, value: string) => {
+        const newLinks = [...deliveryLinks];
+        newLinks[index][field] = value.trim() === "" ? "" : value;
+        setDeliveryLinks(newLinks);
+    };

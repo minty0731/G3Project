@@ -19,7 +19,7 @@ function Page() {
             const data = await res.json();
             if (res.ok) {
                 setProduct(data); // Adjust based on the response structure
-                console.log(data);
+                console.log(data.userData.restaurantId);
             } else {
                 console.log(data.error)
 
