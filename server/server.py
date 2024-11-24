@@ -18,6 +18,9 @@ from misc.const import ResponseKey, UserType
 from misc.token import generate_token, decode_token
 from misc.utils import dataclass_to_dict
 
+# Load environment variables from the .env file
+load_dotenv() 
+
 # MongoDB connection
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
@@ -44,6 +47,7 @@ RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
 # app instance
 app = Flask(__name__)
 CORS(app)
+SERVER_PORT = int(os.getenv("SERVER_PORT"))
 
 # OpenAPI UI configuration
 OPENAPI_DOC = '/openapi_doc'  # URL for accessing the Swagger UI
@@ -695,4 +699,4 @@ def get_searched_restaurant_info_list():
 Server
 """
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=SERVER_PORT)

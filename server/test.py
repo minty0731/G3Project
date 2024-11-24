@@ -13,7 +13,7 @@ from geopy.geocoders import Nominatim
 import os
 from dotenv import load_dotenv, dotenv_values
 
- # Load environment variables from the .env file
+# Load environment variables from the .env file
 load_dotenv() 
 
 # MongoDB connection
@@ -33,7 +33,7 @@ CLOUDINARY_MANAGER = CloudinaryManager(CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINA
 # Geocode manager
 JWT_TOKEN_SECRET = os.getenv("JWT_TOKEN_SECRET")
 GEOCODER_USER_AGENT = os.getenv("GEOCODER_USER_AGENT")
-
+SERVER_PORT = int(os.getenv("SERVER_PORT"))
 USER_REPO = UserRepository(DB_MANAGER)
 RESTAURANT_REPO = RestaurantRepository(DB_MANAGER)
 
@@ -210,7 +210,7 @@ def print_restaurant(restaurant_id: str) -> None:
     print(f"Description: {restaurant.category_description}")
     print(f"Food Country type: {restaurant.food_country_type}")
 
-sss = [MONGO_URI, DB_NAME, CLOUDINARY_KEY, CLOUDINARY_NAME, CLOUDINARY_SECRET, CLOUDINARY_FOLDER_USERS, CLOUDINARY_FOLDER_FOODS, CLOUDINARY_FOLDER_RESTAURANTS, GEOCODER_USER_AGENT, JWT_TOKEN_SECRET]
+sss = [MONGO_URI, DB_NAME, CLOUDINARY_KEY, CLOUDINARY_NAME, CLOUDINARY_SECRET, CLOUDINARY_FOLDER_USERS, CLOUDINARY_FOLDER_FOODS, CLOUDINARY_FOLDER_RESTAURANTS, GEOCODER_USER_AGENT, JWT_TOKEN_SECRET, SERVER_PORT]
 
 for item in sss:
-    print(item)
+    print(type(item))
